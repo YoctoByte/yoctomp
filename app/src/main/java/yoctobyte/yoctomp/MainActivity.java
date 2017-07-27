@@ -84,11 +84,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-
+            Intent home = new Intent(this, HomeActivity.class);
+            startActivity(home);
+        } else if (id == R.id.nav_local_music) {
+            Intent localMusic = new Intent(this, LocalMusicActivity.class);
+            startActivity(localMusic);
         } else if (id == R.id.nav_create_playlist) {
 
         } else if (id == R.id.nav_settings) {
-
+            Intent settings = new Intent(this, SettingsActivity.class);
+            startActivity(settings);
         } else if (id == R.id.nav_account) {
 
         }
