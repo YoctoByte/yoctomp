@@ -10,9 +10,16 @@
     <string name="nav_create_playlist">New playlist</string>
     <string name="nav_playlists">Playlists</string>
     <string name="nav_local_music">Local music</string>
-
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
+
+    <!-- Activities -->
+    <string name="activity_home">Home</string>
+    <string name="activity_local_music">Local Music</string>
+    <string name="activity_settings">Settings</string>
+    <string name="activity_account">Account</string>
+    <string name="activity_playlist">Playlist</string>
+    <string name="activity_search">Search Music</string>
 
     <!-- Strings related to Settings -->
 

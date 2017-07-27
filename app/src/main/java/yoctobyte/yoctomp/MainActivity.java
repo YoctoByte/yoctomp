@@ -14,7 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity
+public abstract class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
@@ -90,12 +90,14 @@ public class MainActivity extends AppCompatActivity
             Intent localMusic = new Intent(this, LocalMusicActivity.class);
             startActivity(localMusic);
         } else if (id == R.id.nav_create_playlist) {
-
+            Intent createPlaylist = new Intent(this, PlaylistActivity.class);
+            startActivity(createPlaylist);
         } else if (id == R.id.nav_settings) {
             Intent settings = new Intent(this, SettingsActivity.class);
             startActivity(settings);
         } else if (id == R.id.nav_account) {
-
+            Intent account = new Intent(this, AccountActivity.class);
+            startActivity(account);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
