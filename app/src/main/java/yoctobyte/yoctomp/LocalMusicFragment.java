@@ -1,10 +1,14 @@
 package yoctobyte.yoctomp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -14,50 +18,46 @@ import android.view.ViewGroup;
  * Activities that contain this fragment must implement the
  * {@link LocalMusicFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link LocalMusicFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class LocalMusicFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private OnFragmentInteractionListener mListener;
+    static final int CHOOSE_DIRECTORY_REQUEST = 1;
 
     public LocalMusicFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LocalMusicFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LocalMusicFragment newInstance(String param1, String param2) {
-        LocalMusicFragment fragment = new LocalMusicFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the main; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.local_music, menu);
+        super.onCreateOptionsMenu(menu,inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.localMusic_addSource) {
+            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            i.addCategory(Intent.CATEGORY_DEFAULT);
+            startActivityForResult(Intent.createChooser(i, "Choose directory"), CHOOSE_DIRECTORY_REQUEST);
+            return true;
+        } else if (id == R.id.localMusic_ManageSources) {
+            return true;
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
