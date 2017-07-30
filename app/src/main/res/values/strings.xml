@@ -28,4 +28,6 @@
     <string name="menu_localMusic_addSource">Add Source</string>
     <string name="menu_localMusic_manageSources">Manage Sources</string>
 
+    <string name="new_directory">new-directory</string>
+
 </resources>

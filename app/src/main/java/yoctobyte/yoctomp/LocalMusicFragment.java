@@ -4,13 +4,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v4.provider.DocumentFile;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import net.rdrei.android.dirchooser.DirectoryChooserActivity;
+import net.rdrei.android.dirchooser.DirectoryChooserConfig;
 
 
 /**
@@ -21,7 +27,7 @@ import android.view.ViewGroup;
  */
 public class LocalMusicFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
-    static final int CHOOSE_DIRECTORY_REQUEST = 1;
+    static final int CHOOSE_DIRECTORY_REQUEST = 42;
 
     public LocalMusicFragment() {
         // Required empty public constructor
@@ -49,15 +55,31 @@ public class LocalMusicFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.localMusic_addSource) {
-            Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            i.addCategory(Intent.CATEGORY_DEFAULT);
-            startActivityForResult(Intent.createChooser(i, "Choose directory"), CHOOSE_DIRECTORY_REQUEST);
+            final Intent chooserIntent = new Intent(getActivity(), DirectoryChooserActivity.class);
+            final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                    .newDirectoryName("@string/new_directory")
+                    .allowReadOnlyDirectory(true)
+                    .allowNewDirectoryNameModification(true)
+                    //.initialDirectory(Environment.getExternalStorageDirectory().getPath())
+                    .build();
+            chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
+            startActivityForResult(chooserIntent, CHOOSE_DIRECTORY_REQUEST);
             return true;
         } else if (id == R.id.localMusic_ManageSources) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        Toast toast = Toast.makeText(getActivity(), requestCode + " and " + CHOOSE_DIRECTORY_REQUEST, Toast.LENGTH_SHORT);
+        toast.show();
+        if (requestCode == CHOOSE_DIRECTORY_REQUEST) {
+            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+
+            }
+        }
     }
 
     @Override
