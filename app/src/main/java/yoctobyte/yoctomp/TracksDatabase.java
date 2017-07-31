@@ -17,9 +17,11 @@ public class TracksDatabase extends SQLiteOpenHelper {
     private static final String DB_NAME = "db_yoctomp";
     private static final int DB_VERSION = 1;
 
-    private static final String TABLE_NAME_ALL_TRACKS = "all_tracks";     // This table contains all tracks and their metadata.
-    private static final String TABLE_NAME_TABLE_NAMES = "table_names";   // This table contains all other table names except "all_tracks".
-    private static final String TABLE_NAME_LOCAL_MUSIC = "tracks_local";  // This table only contains references to track ids of the "all_tracks" table.
+    private static final String TABLE_NAME_ALL_TRACKS = "all_tracks";           // This table contains all tracks and their metadata.
+    private static final String TABLE_NAME_TABLE_NAMES = "table_names";         // This table contains all other table names except "all_tracks".
+    private static final String TABLE_NAME_LOCAL_MUSIC = "tracks_local";        // This table only contains references to track ids of the "all_tracks" table.
+    private static final String TABLE_NAME_EXTERNAL_MUSIC = "tracks_external";  // This table contains references of tracks that are not stored locally. e.g. youtube songs. The actual metadata is still stored in the "all_tracks" table.
+    private static final String TABLE_NAME_SOURCES = "sources";                 // This table contains the local sources for tracks, added by the user.
     private static final String TABLE_PREFIX_PLAYLIST = "playlist_";
 
     private static final String[] PRIMARY_COLUMN_NAMES = {"id", "uri", "title", "album", "artist", "length"};
@@ -29,6 +31,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
 
     public static String getTableNameLocalMusic() {return TABLE_NAME_LOCAL_MUSIC;}
+    public static String getTableNameExternalMusic() {return TABLE_NAME_EXTERNAL_MUSIC;}
+    public static String getTableNameSources() {return TABLE_NAME_SOURCES;}
 
 
     public TracksDatabase(Context context) {
@@ -123,17 +127,38 @@ public class TracksDatabase extends SQLiteOpenHelper {
         return true;
     }
 
+    private long getId(Track track) {
+        String[] uriString = {track.getUri().toString()};
+        SQLiteDatabase db = getReadableDatabase();
+        String[] columns = {"id", "uri"};
+        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, columns, "uri=?", uriString, null, null, null, null);
+        long id;
+        if (cursor.moveToFirst()) {
+            id = cursor.getInt(0);
+        } else {
+            id = -1;
+        }
+        cursor.close();
+        db.close();
+        return id;
+    }
+
     public long addTrack(Track track) {
+        long id = getId(track);
+        if (id != -1) {
+            return id;
+            //db.delete(TABLE_NAME_ALL_TRACKS, "id=?", new String[] {String.valueOf(id)});
+        }
+        Log.d("addTrack", "Added " + track.getUri().toString());
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-
         contentValues.put("title", track.getTitle());
         contentValues.put("album", track.getAlbum());
         contentValues.put("artist", track.getArtist());
         contentValues.put("uri", track.getUri().toString());
         contentValues.put("length", track.getLength());
 
-        long id = db.insert(TABLE_NAME_ALL_TRACKS, null, contentValues);
+        id = db.insert(TABLE_NAME_ALL_TRACKS, null, contentValues);
         db.close();
         return id;
     }

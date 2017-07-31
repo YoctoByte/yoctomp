@@ -73,7 +73,7 @@ public class LocalMusicFragment extends Fragment {
             TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
 
             for (DocumentFile file: pickedDir.listFiles()) {
-                Log.d("onActivityResult", "name: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
+                Log.d("onActivityResult", "uri: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
                 Track track = new Track(file.getUri());
                 localMusicTable.addTrack(track);
             }
