@@ -4,19 +4,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
-import net.rdrei.android.dirchooser.DirectoryChooserActivity;
-import net.rdrei.android.dirchooser.DirectoryChooserConfig;
 
 
 /**
@@ -55,15 +51,8 @@ public class LocalMusicFragment extends Fragment {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.localMusic_addSource) {
-            final Intent chooserIntent = new Intent(getActivity(), DirectoryChooserActivity.class);
-            final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
-                    .newDirectoryName("@string/new_directory")
-                    .allowReadOnlyDirectory(true)
-                    .allowNewDirectoryNameModification(true)
-                    //.initialDirectory(Environment.getExternalStorageDirectory().getPath())
-                    .build();
-            chooserIntent.putExtra(DirectoryChooserActivity.EXTRA_CONFIG, config);
-            startActivityForResult(chooserIntent, CHOOSE_DIRECTORY_REQUEST);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            startActivityForResult(intent, CHOOSE_DIRECTORY_REQUEST);
             return true;
         } else if (id == R.id.localMusic_ManageSources) {
             return true;
@@ -73,11 +62,12 @@ public class LocalMusicFragment extends Fragment {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        Toast toast = Toast.makeText(getActivity(), requestCode + " and " + CHOOSE_DIRECTORY_REQUEST, Toast.LENGTH_SHORT);
-        toast.show();
         if (requestCode == CHOOSE_DIRECTORY_REQUEST) {
-            if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
+            Uri treeUri = resultData.getData();
+            DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri);
 
+            for (DocumentFile file: pickedDir.listFiles()) {
+                Log.d("onActivityResult", "name: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
             }
         }
     }
