@@ -21,8 +21,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
     private static final String TABLE_NAME_LOCAL_MUSIC = "tracks_local";
     private static final String TABLE_PREFIX_PLAYLIST = "playlist_";
 
-    private static final String[] PRIMARY_COLUMN_NAMES = {"id", "location", "title", "album", "artist", "length"};
-    private static final String SQL_CREATE_PRIMARY_TABLE = "CREATE TABLE IF NOT EXISTS all_tracks(id INTEGER PRIMARY KEY AUTOINCREMENT, location VARCHAR, title VARCHAR, album VARCHAR, artist VARCHAR, length INTEGER, referenced_by VARCHAR);";
+    private static final String[] PRIMARY_COLUMN_NAMES = {"id", "uri", "title", "album", "artist", "length"};
+    private static final String SQL_CREATE_PRIMARY_TABLE = "CREATE TABLE IF NOT EXISTS all_tracks(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR, title VARCHAR, album VARCHAR, artist VARCHAR, length INTEGER, referenced_by VARCHAR);";
     private static final String SQL_CREATE_SECONDARY_TABLE = "CREATE TABLE IF NOT EXISTS %s(id INTEGER PRIMARY KEY AUTOINCREMENT, db_id INTEGER, FOREIGN KEY(db_id) REFERENCES all_tracks(id));";
 
     private Map<String, TrackTable> tables = new HashMap<>();
@@ -82,7 +82,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
         contentValues.put("title", track.getTitle());
         contentValues.put("album", track.getAlbum());
         contentValues.put("artist", track.getArtist());
-        contentValues.put("location", track.getLocation());
+        contentValues.put("uri", track.getUri());
         contentValues.put("length", track.getLength());
 
         long id = db.insert(TABLE_ALL_TRACKS, null, contentValues);
@@ -171,24 +171,24 @@ public class TracksDatabase extends SQLiteOpenHelper {
     }
 
     public class Track {
-        private String artist, album, title, location;
+        private String artist, album, title, uri;
         private int length, id;
 
-        public Track(String location) {
-            this.location = location; }
+        public Track(String uri) {
+            this.uri = uri; }
 
         public int getId() {return id;}
         public String getArtist() {return artist;}
         public String getAlbum() {return album;}
         public String getTitle() {return title;}
-        public String getLocation() {return location;}
+        public String getUri() {return uri;}
         public int getLength() {return length;}
 
         public void setId(int id) {this.id = id;}
         public void setArtist(String artist) {this.artist = artist;}
         public void setAlbum(String album) {this.album = album;}
         public void setTitle(String title) {this.title = title;}
-        public void setLocation(String location) {this.location = location;}
+        public void setUri(String uri) {this.uri = uri;}
         public void setLength(int length) {this.length = length;}
     }
 }
