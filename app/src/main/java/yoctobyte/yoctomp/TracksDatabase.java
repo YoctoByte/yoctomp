@@ -7,44 +7,56 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
+import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class TracksDatabase extends SQLiteOpenHelper {
     private static final String DB_NAME = "db_yoctomp";
     private static final int DB_VERSION = 1;
 
-    private static final String TABLE_ALL_TRACKS = "all_tracks";
-    private static final String TABLE_NAME_LOCAL_MUSIC = "tracks_local";
+    private static final String TABLE_NAME_ALL_TRACKS = "all_tracks";     // This table contains all tracks and their metadata.
+    private static final String TABLE_NAME_TABLE_NAMES = "table_names";   // This table contains all other table names except "all_tracks".
+    private static final String TABLE_NAME_LOCAL_MUSIC = "tracks_local";  // This table only contains references to track ids of the "all_tracks" table.
     private static final String TABLE_PREFIX_PLAYLIST = "playlist_";
 
     private static final String[] PRIMARY_COLUMN_NAMES = {"id", "uri", "title", "album", "artist", "length"};
     private static final String SQL_CREATE_PRIMARY_TABLE = "CREATE TABLE IF NOT EXISTS all_tracks(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR, title VARCHAR, album VARCHAR, artist VARCHAR, length INTEGER, referenced_by VARCHAR);";
     private static final String SQL_CREATE_SECONDARY_TABLE = "CREATE TABLE IF NOT EXISTS %s(id INTEGER PRIMARY KEY AUTOINCREMENT, db_id INTEGER, FOREIGN KEY(db_id) REFERENCES all_tracks(id));";
+    private static final String SQL_CREATE_TABLE_NAMES_TABLE = "CREATE TABLE IF NOT EXISTS table_names(id INTEGER PRIMARY KEY AUTOINCREMENT, table_name VARCHAR);";
 
-    private Map<String, TrackTable> tables = new HashMap<>();
+
+    public static String getTableNameLocalMusic() {return TABLE_NAME_LOCAL_MUSIC;}
 
 
     public TracksDatabase(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        Log.d("TracksDatabase", "Constructor called");
     }
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
+        Log.d("TracksDatabase", "onCreate called");
+
         sqLiteDatabase.execSQL(SQL_CREATE_PRIMARY_TABLE);
-        String sqlCreateLocalMusic = String.format(SQL_CREATE_SECONDARY_TABLE, TABLE_NAME_LOCAL_MUSIC);
-        sqLiteDatabase.execSQL(sqlCreateLocalMusic);
+        sqLiteDatabase.execSQL(String.format(SQL_CREATE_SECONDARY_TABLE, TABLE_NAME_LOCAL_MUSIC));
+        sqLiteDatabase.execSQL(SQL_CREATE_TABLE_NAMES_TABLE);
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("table_name", TABLE_NAME_LOCAL_MUSIC);
+        sqLiteDatabase.insert(TABLE_NAME_TABLE_NAMES, null, contentValues);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         String sqlDropLocalMusic = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_LOCAL_MUSIC);
-        String sqlDropAllTracks = String.format("DROP TABLE IF EXISTS %s;", TABLE_ALL_TRACKS);
+        String sqlDropAllTracks = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_ALL_TRACKS);
+        String sqlDropTableNames = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_TABLE_NAMES);
         sqLiteDatabase.execSQL(sqlDropLocalMusic);
         sqLiteDatabase.execSQL(sqlDropAllTracks);
+        sqLiteDatabase.execSQL(sqlDropTableNames);
 
         onCreate(sqLiteDatabase);
     }
@@ -59,30 +71,56 @@ public class TracksDatabase extends SQLiteOpenHelper {
         return getTable(tableName);
     }
 
+    public boolean deletePlaylist(String playlistName) {
+        String tableName = TABLE_PREFIX_PLAYLIST + playlistName;
+        return deleteTable(tableName);
+    }
+
+    private ArrayList<String> getTableNames() {
+        ArrayList<String> tableNames = new ArrayList<>();
+
+        SQLiteDatabase db = getReadableDatabase();
+        String[] columns = {"table_name"};
+        Cursor cursor = db.query(TABLE_NAME_TABLE_NAMES, columns, null, null, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                tableNames.add(cursor.getString(0));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return tableNames;
+    }
+
     public TrackTable newTable(String tableName) {
-        SQLiteDatabase db = getWritableDatabase();
-        if (tables.containsKey(tableName)) {
-            db.close();
-            return tables.get(tableName);
-        } else {
+        ArrayList<String> tableNames = getTableNames();
+        if (!tableNames.contains(tableName)) {
+            SQLiteDatabase db = getWritableDatabase();
             String sqlCreatePlaylist = String.format(SQL_CREATE_SECONDARY_TABLE, tableName);
             db.execSQL(sqlCreatePlaylist);
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("table_name", tableName);
+            db.insert(TABLE_NAME_TABLE_NAMES, null, contentValues);
             db.close();
-            TrackTable trackTable = new TrackTable(tableName);
-            tables.put(tableName, trackTable);
-            return trackTable;
         }
+        return new TrackTable(tableName);
     }
 
     public TrackTable getTable(String tableName) {
-        SQLiteDatabase db = getWritableDatabase();
-        if (tables.containsKey(tableName)) {
-            db.close();
-            return tables.get(tableName);
-        } else {
-            db.close();
+        ArrayList<String> tableNames = getTableNames();
+        if (!tableNames.contains(tableName)) {
+            Log.d("getTable", tableName + " does not exist");
             return null;
         }
+        return new TrackTable(tableName);
+    }
+
+    //TODO
+    public boolean deleteTable(String tableName) {
+        return true;
     }
 
     public long addTrack(Track track) {
@@ -92,21 +130,21 @@ public class TracksDatabase extends SQLiteOpenHelper {
         contentValues.put("title", track.getTitle());
         contentValues.put("album", track.getAlbum());
         contentValues.put("artist", track.getArtist());
-        contentValues.put("uri", track.getUri());
+        contentValues.put("uri", track.getUri().toString());
         contentValues.put("length", track.getLength());
 
-        long id = db.insert(TABLE_ALL_TRACKS, null, contentValues);
+        long id = db.insert(TABLE_NAME_ALL_TRACKS, null, contentValues);
         db.close();
         return id;
     }
 
     private Track readTrack(long db_id) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", new String[]{String.valueOf(db_id)}, null, null, null, null);
+        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", new String[]{String.valueOf(db_id)}, null, null, null, null);
         if (cursor != null) {
             cursor.moveToFirst();
         }
-        Track track = new Track(cursor.getString(1));
+        Track track = new Track(Uri.parse(cursor.getString(1)));
         track.setId(cursor.getInt(0));
         track.setTitle(cursor.getString(2));
         track.setAlbum(cursor.getString(3));
@@ -121,11 +159,11 @@ public class TracksDatabase extends SQLiteOpenHelper {
         ArrayList<Track> tracks = new ArrayList<>();
 
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", dbIds, null, null, null, null);
+        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", dbIds, null, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
-                Track track = new Track(cursor.getString(1));
+                Track track = new Track(Uri.parse(cursor.getString(1)));
                 track.setId(cursor.getInt(0));
                 track.setTitle(cursor.getString(2));
                 track.setAlbum(cursor.getString(3));
@@ -143,7 +181,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
     public long getSize() {
         SQLiteDatabase db = getReadableDatabase();
-        long count = DatabaseUtils.queryNumEntries(db, TABLE_ALL_TRACKS);
+        long count = DatabaseUtils.queryNumEntries(db, TABLE_NAME_ALL_TRACKS);
         db.close();
         return count;
     }
@@ -205,32 +243,5 @@ public class TracksDatabase extends SQLiteOpenHelper {
             db.close();
             return id;
         }
-    }
-
-    public class Track {
-        private String artist, album, title, uri;
-        private int length, id;
-
-        public Track(String uri) {
-            this.uri = uri; }
-
-        //TODO
-        public void findMetadata() {
-            //https://stackoverflow.com/questions/11327954/how-to-extract-metadata-from-mp3
-        }
-
-        public int getId() {return id;}
-        public String getArtist() {return artist;}
-        public String getAlbum() {return album;}
-        public String getTitle() {return title;}
-        public String getUri() {return uri;}
-        public int getLength() {return length;}
-
-        public void setId(int id) {this.id = id;}
-        public void setArtist(String artist) {this.artist = artist;}
-        public void setAlbum(String album) {this.album = album;}
-        public void setTitle(String title) {this.title = title;}
-        public void setUri(String uri) {this.uri = uri;}
-        public void setLength(int length) {this.length = length;}
     }
 }

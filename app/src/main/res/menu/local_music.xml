@@ -8,7 +8,12 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/localMusic_ManageSources"
+        android:id="@+id/localMusic_deleteDatabase"
+        android:title="Delete Database"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/localMusic_manageSources"
         android:title="@string/menu_localMusic_manageSources"
         app:showAsAction="never" />
 </menu>

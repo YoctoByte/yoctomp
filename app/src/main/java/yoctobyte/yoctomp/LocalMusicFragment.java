@@ -54,9 +54,12 @@ public class LocalMusicFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivityForResult(intent, CHOOSE_DIRECTORY_REQUEST);
             return true;
-        } else if (id == R.id.localMusic_ManageSources) {
+        } else if (id == R.id.localMusic_deleteDatabase) {
+            getActivity().deleteDatabase("db_yoctomp");
             return true;
-        }
+        } else if (id == R.id.localMusic_manageSources) {
+        return true;
+    }
 
         return super.onOptionsItemSelected(item);
     }
@@ -66,8 +69,13 @@ public class LocalMusicFragment extends Fragment {
             Uri treeUri = resultData.getData();
             DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri);
 
+            TracksDatabase db = new TracksDatabase(getActivity());
+            TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
+
             for (DocumentFile file: pickedDir.listFiles()) {
                 Log.d("onActivityResult", "name: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
+                Track track = new Track(file.getUri());
+                localMusicTable.addTrack(track);
             }
         }
     }
