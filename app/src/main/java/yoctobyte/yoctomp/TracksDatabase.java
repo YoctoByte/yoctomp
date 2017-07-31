@@ -39,6 +39,16 @@ public class TracksDatabase extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(sqlCreateLocalMusic);
     }
 
+    @Override
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        String sqlDropLocalMusic = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_LOCAL_MUSIC);
+        String sqlDropAllTracks = String.format("DROP TABLE IF EXISTS %s;", TABLE_ALL_TRACKS);
+        sqLiteDatabase.execSQL(sqlDropLocalMusic);
+        sqLiteDatabase.execSQL(sqlDropAllTracks);
+
+        onCreate(sqLiteDatabase);
+    }
+
     public TrackTable newPlaylist(String playlistName) {
         String tableName = TABLE_PREFIX_PLAYLIST + playlistName;
         return newTable(tableName);
@@ -90,14 +100,52 @@ public class TracksDatabase extends SQLiteOpenHelper {
         return id;
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        String sqlDropLocalMusic = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_LOCAL_MUSIC);
-        String sqlDropAllTracks = String.format("DROP TABLE IF EXISTS %s;", TABLE_ALL_TRACKS);
-        sqLiteDatabase.execSQL(sqlDropLocalMusic);
-        sqLiteDatabase.execSQL(sqlDropAllTracks);
+    private Track readTrack(long db_id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", new String[]{String.valueOf(db_id)}, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
+        Track track = new Track(cursor.getString(1));
+        track.setId(cursor.getInt(0));
+        track.setTitle(cursor.getString(2));
+        track.setAlbum(cursor.getString(3));
+        track.setArtist(cursor.getString(4));
+        track.setLength(cursor.getInt(5));
+        cursor.close();
+        db.close();
+        return track;
+    }
 
-        onCreate(sqLiteDatabase);
+    private ArrayList<Track> readTracks(String[] dbIds) {
+        ArrayList<Track> tracks = new ArrayList<>();
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", dbIds, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Track track = new Track(cursor.getString(1));
+                track.setId(cursor.getInt(0));
+                track.setTitle(cursor.getString(2));
+                track.setAlbum(cursor.getString(3));
+                track.setArtist(cursor.getString(4));
+                track.setLength(cursor.getInt(5));
+
+                tracks.add(track);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return tracks;
+    }
+
+    public long getSize() {
+        SQLiteDatabase db = getReadableDatabase();
+        long count = DatabaseUtils.queryNumEntries(db, TABLE_ALL_TRACKS);
+        db.close();
+        return count;
     }
 
     public class TrackTable {
@@ -116,44 +164,33 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
         public Track readTrack(int id) {
             SQLiteDatabase db = getReadableDatabase();
-            Cursor cursor = db.query(tableName, PRIMARY_COLUMN_NAMES, "id=?", new String[]{String.valueOf(id)}, null, null, null, null);
+            String[] columnNames = {};
+            Cursor cursor = db.query(tableName, columnNames, "id=?", new String[]{String.valueOf(id)}, null, null, null, null);
             if (cursor != null) {
                 cursor.moveToFirst();
             }
-            Track track = new Track(cursor.getString(1));
-            track.setId(cursor.getInt(0));
-            track.setTitle(cursor.getString(2));
-            track.setAlbum(cursor.getString(3));
-            track.setArtist(cursor.getString(4));
-            track.setLength(cursor.getInt(5));
+            long db_id = cursor.getInt(1);
             cursor.close();
             db.close();
-            return track;
+            return TracksDatabase.this.readTrack(db_id);
         }
 
-        public ArrayList<Track> listTracks() {
-            ArrayList<Track> tracks = new ArrayList<>();
-
+        public ArrayList<Track> readTracks() {
             SQLiteDatabase db = getReadableDatabase();
-            String query = String.format("SELECT * FROM %s;", tableName);
-            Cursor cursor = db.rawQuery(query, null);
+            String[] columnNames = {};
+            Cursor cursor = db.query(tableName, columnNames, null, null, null, null, null, null);
 
+            ArrayList<String> dbIds = new ArrayList<>();
             if (cursor.moveToFirst()) {
                 do {
-                    Track track = new Track(cursor.getString(1));
-                    track.setId(cursor.getInt(0));
-                    track.setTitle(cursor.getString(2));
-                    track.setAlbum(cursor.getString(3));
-                    track.setArtist(cursor.getString(4));
-                    track.setLength(cursor.getInt(5));
-
-                    tracks.add(track);
+                    long dbId = cursor.getInt(1);
+                    dbIds.add(String.valueOf(dbId));
                 } while (cursor.moveToNext());
             }
 
             cursor.close();
             db.close();
-            return tracks;
+            return TracksDatabase.this.readTracks(dbIds.toArray(new String[0]));
         }
 
         public long addTrack(Track track) {
@@ -176,6 +213,11 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
         public Track(String uri) {
             this.uri = uri; }
+
+        //TODO
+        public void findMetadata() {
+            //https://stackoverflow.com/questions/11327954/how-to-extract-metadata-from-mp3
+        }
 
         public int getId() {return id;}
         public String getArtist() {return artist;}
