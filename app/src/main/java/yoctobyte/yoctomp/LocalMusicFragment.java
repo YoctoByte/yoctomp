@@ -54,8 +54,8 @@ public class LocalMusicFragment extends Fragment {
     }
 
     private void populatePlaylist() {
-        //TracksDatabase db = new TracksDatabase(getActivity());
-        //TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
+        TracksDatabase db = new TracksDatabase(getActivity());
+        TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
 
         tracks = new ArrayList<>();
         HashMap<String, String> temp = new HashMap<>();
@@ -63,15 +63,15 @@ public class LocalMusicFragment extends Fragment {
         temp.put("artist", "test artist");
         temp.put("length", "1:23");
         tracks.add(temp);
-        /*
+
         for (Track track: localMusicTable.readTracks()) {
+            Log.d("", "track read");
             temp = new HashMap<>();
             temp.put("title", track.getTitle());
             temp.put("artist", track.getArtist());
             temp.put("length", String.valueOf(track.getLength()));
             tracks.add(temp);
         }
-        */
     }
 
     @Override

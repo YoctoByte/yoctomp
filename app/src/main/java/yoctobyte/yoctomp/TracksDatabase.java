@@ -8,6 +8,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
         Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, columns, "uri=?", uriString, null, null, null, null);
         long id;
         if (cursor.moveToFirst()) {
-            id = cursor.getInt(0);
+            id = cursor.getLong(0);
         } else {
             id = -1;
         }
@@ -170,7 +171,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
             cursor.moveToFirst();
         }
         Track track = new Track(Uri.parse(cursor.getString(1)));
-        track.setId(cursor.getInt(0));
+        track.setId(cursor.getLong(0));
         track.setTitle(cursor.getString(2));
         track.setAlbum(cursor.getString(3));
         track.setArtist(cursor.getString(4));
@@ -180,16 +181,21 @@ public class TracksDatabase extends SQLiteOpenHelper {
         return track;
     }
 
-    private ArrayList<Track> readTracks(String[] dbIds) {
+    private ArrayList<Track> readTracks(ArrayList<Long> dbIds) {
         ArrayList<Track> tracks = new ArrayList<>();
 
+        String stringDbIds = TextUtils.join(",", dbIds);
+
+        Log.d("TracksDatabse", stringDbIds);
+
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", dbIds, null, null, null, null);
+        //Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id IN (?)", new String[] {stringDbIds}, null, null, null, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM all_tracks WHERE id IN (" + stringDbIds+ ");", new String[] {});
 
         if (cursor.moveToFirst()) {
             do {
                 Track track = new Track(Uri.parse(cursor.getString(1)));
-                track.setId(cursor.getInt(0));
+                track.setId(cursor.getLong(0));
                 track.setTitle(cursor.getString(2));
                 track.setAlbum(cursor.getString(3));
                 track.setArtist(cursor.getString(4));
@@ -197,6 +203,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
                 tracks.add(track);
             } while (cursor.moveToNext());
+        } else {
+            Log.d("TracksDatabse", "No tracks found");
         }
 
         cursor.close();
@@ -232,7 +240,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
             if (cursor != null) {
                 cursor.moveToFirst();
             }
-            long db_id = cursor.getInt(1);
+            long db_id = cursor.getLong(1);
             cursor.close();
             db.close();
             return TracksDatabase.this.readTrack(db_id);
@@ -243,17 +251,34 @@ public class TracksDatabase extends SQLiteOpenHelper {
             String[] columnNames = {};
             Cursor cursor = db.query(tableName, columnNames, null, null, null, null, null, null);
 
-            ArrayList<String> dbIds = new ArrayList<>();
+            ArrayList<Long> dbIds = new ArrayList<>();
             if (cursor.moveToFirst()) {
                 do {
-                    long dbId = cursor.getInt(1);
-                    dbIds.add(String.valueOf(dbId));
+                    long dbId = cursor.getLong(1);
+                    dbIds.add(dbId);
                 } while (cursor.moveToNext());
             }
 
             cursor.close();
             db.close();
-            return TracksDatabase.this.readTracks(dbIds.toArray(new String[0]));
+            Log.d("TracksDatabse", "Reading tracks from database");
+            return TracksDatabase.this.readTracks(dbIds);
+        }
+
+        private long getId(long dbId) {
+            String[] dbIdString = {String.valueOf(dbId)};
+            SQLiteDatabase db = getReadableDatabase();
+            String[] columns = {"id", "db_id"};
+            Cursor cursor = db.query(tableName, columns, "db_id=?", dbIdString, null, null, null, null);
+            long id;
+            if (cursor.moveToFirst()) {
+                id = cursor.getLong(0);
+            } else {
+                id = -1;
+            }
+            cursor.close();
+            db.close();
+            return id;
         }
 
         public long addTrack(Track track) {
@@ -261,10 +286,17 @@ public class TracksDatabase extends SQLiteOpenHelper {
             if (db_id == -1) {
                 return -1;
             }
+
+            // Check if the id returned by the main track table already is in the current table
+            long id = getId(db_id);
+            if (id != -1) {
+                return id;
+            }
+
             SQLiteDatabase db = getWritableDatabase();
             ContentValues contentValues = new ContentValues();
             contentValues.put("db_id", db_id);
-            long id = db.insert(tableName, null, contentValues);
+            id = db.insert(tableName, null, contentValues);
             db.close();
             return id;
         }

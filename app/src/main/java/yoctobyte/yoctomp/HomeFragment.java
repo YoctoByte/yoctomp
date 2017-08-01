@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
         if (id == R.id.localMusic_addSource) {
             return true;
         } else if (id == R.id.localMusic_deleteDatabase) {
-            getActivity().deleteDatabase("db_yoctomp");
+            getActivity().deleteDatabase("db_yoxctomp");
             return true;
         } else if (id == R.id.localMusic_manageSources) {
             return true;
