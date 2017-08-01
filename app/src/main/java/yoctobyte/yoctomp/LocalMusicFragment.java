@@ -1,6 +1,5 @@
 package yoctobyte.yoctomp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,17 +12,20 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link LocalMusicFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- */
 public class LocalMusicFragment extends Fragment {
-    private OnFragmentInteractionListener mListener;
     static final int CHOOSE_DIRECTORY_REQUEST = 42;
+
+    static ArrayList<HashMap<String, String>> tracks = new ArrayList<>();
+    ListView listview;
+    SimpleAdapter simpleAdapter;
+
 
     public LocalMusicFragment() {
         // Required empty public constructor
@@ -33,6 +35,43 @@ public class LocalMusicFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_local_music, container, false);
+
+        listview = view.findViewById(R.id.localMusicListview);
+        Log.d("LocalMusicFragment", String.valueOf(listview));
+        populatePlaylist();
+        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.listview_track,
+                new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
+        listview.setAdapter(simpleAdapter);
+
+        return view;
+    }
+
+    private void populatePlaylist() {
+        //TracksDatabase db = new TracksDatabase(getActivity());
+        //TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
+
+        tracks = new ArrayList<>();
+        HashMap<String, String> temp = new HashMap<>();
+        temp.put("title", "test title");
+        temp.put("artist", "test artist");
+        temp.put("length", "1:23");
+        tracks.add(temp);
+        /*
+        for (Track track: localMusicTable.readTracks()) {
+            temp = new HashMap<>();
+            temp.put("title", track.getTitle());
+            temp.put("artist", track.getArtist());
+            temp.put("length", String.valueOf(track.getLength()));
+            tracks.add(temp);
+        }
+        */
     }
 
     @Override
@@ -49,7 +88,6 @@ public class LocalMusicFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.localMusic_addSource) {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivityForResult(intent, CHOOSE_DIRECTORY_REQUEST);
@@ -58,8 +96,8 @@ public class LocalMusicFragment extends Fragment {
             getActivity().deleteDatabase("db_yoctomp");
             return true;
         } else if (id == R.id.localMusic_manageSources) {
-        return true;
-    }
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -80,47 +118,6 @@ public class LocalMusicFragment extends Fragment {
         }
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_local_music, container, false);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);

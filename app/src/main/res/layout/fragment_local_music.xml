@@ -4,9 +4,9 @@
     android:layout_height="match_parent"
     tools:context=".LocalMusicFragment">
 
-    <TextView
+    <ListView
+        android:id="@+id/localMusicListview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="This is the Local Music fragment" />
+        android:layout_height="match_parent" />
 
 </FrameLayout>
