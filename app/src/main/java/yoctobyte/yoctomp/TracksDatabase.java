@@ -164,12 +164,18 @@ public class TracksDatabase extends SQLiteOpenHelper {
         return id;
     }
 
-    private Track readTrack(long db_id) {
+    private Track readTrack(long dbId) {
+        String stringDbId = String.valueOf(dbId);
+        String stringColumns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+        String sqlQuery = "SELECT " + stringColumns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id=" + stringDbId + ";";
+
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id=?", new String[]{String.valueOf(db_id)}, null, null, null, null);
-        if (cursor != null) {
-            cursor.moveToFirst();
+        Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
+
+        if (cursor == null) {
+            return null;
         }
+        cursor.moveToFirst();
         Track track = new Track(Uri.parse(cursor.getString(1)));
         track.setId(cursor.getLong(0));
         track.setTitle(cursor.getString(2));
