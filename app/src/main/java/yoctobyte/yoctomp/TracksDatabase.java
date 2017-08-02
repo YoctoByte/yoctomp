@@ -290,7 +290,9 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
         public Track newTrack(Uri uri) {
             Track track = new Track(uri);
-            addTrack(track);
+            if (addTrack(track) == -1) {
+                return null;
+            }
             return track;
         }
 
@@ -303,7 +305,7 @@ public class TracksDatabase extends SQLiteOpenHelper {
             // Check if the id returned by the main track table already is in the current table
             long id = getId(db_id);
             if (id != -1) {
-                return id;
+                return -1;
             }
 
             SQLiteDatabase db = getWritableDatabase();

@@ -2,6 +2,7 @@ package yoctobyte.yoctomp;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.provider.DocumentFile;
@@ -134,7 +135,16 @@ public class LocalMusicFragment extends Fragment {
                 return;
             }
             Uri treeUri = resultData.getData();
-            DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri);
+            new readLibrary().execute(treeUri);
+        }
+    }
+
+    private class readLibrary extends AsyncTask<Uri, Void, String> {
+        @Override
+        protected String doInBackground(Uri... treeUri) {
+            publishProgress();
+
+            DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri[0]);
 
             TracksDatabase db = new TracksDatabase(getActivity());
             TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
@@ -142,13 +152,28 @@ public class LocalMusicFragment extends Fragment {
             for (DocumentFile file: pickedDir.listFiles()) {
                 Log.d("onActivityResult", "uri: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
                 TracksDatabase.Track track = localMusicTable.newTrack(file.getUri());
+                if (track == null) {
+                    continue;
+                }
                 track.findMetadata(getActivity());
+
+                HashMap<String, String> temp = new HashMap<>();
+                temp.put("title", track.getTitle());
+                temp.put("artist", track.getArtist());
+                temp.put("length", showLength(track.getLength()));
+                tracks.add(temp);
+                publishProgress();
             }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+            simpleAdapter.notifyDataSetChanged();
         }
     }
 
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
+    public interface OnFragmentInteractionListener {}
 }
