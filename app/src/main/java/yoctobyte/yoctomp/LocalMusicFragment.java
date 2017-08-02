@@ -113,6 +113,7 @@ public class LocalMusicFragment extends Fragment {
             for (DocumentFile file: pickedDir.listFiles()) {
                 Log.d("onActivityResult", "uri: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
                 Track track = new Track(file.getUri());
+                track.findMetadata(getActivity());
                 localMusicTable.addTrack(track);
             }
         }

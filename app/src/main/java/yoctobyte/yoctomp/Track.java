@@ -1,6 +1,10 @@
 package yoctobyte.yoctomp;
 
+import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.util.Log;
+import android.view.View;
 
 
 public class Track {
@@ -13,9 +17,19 @@ public class Track {
         this.uri = uri;
     }
 
-    //TODO
-    public void findMetadata() {
-        //https://stackoverflow.com/questions/11327954/how-to-extract-metadata-from-mp3
+    public void findMetadata(Context context) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        Log.d("findMetadata", uri.getPath());
+        retriever.setDataSource(context, uri);
+
+        title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+        artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        //length = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+        //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR);
+        //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+        //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
     }
 
     public long getId() {return id;}
