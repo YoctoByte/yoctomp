@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,9 +73,31 @@ public class LocalMusicFragment extends Fragment {
                 temp.put("title", track.getTitle());
             }
             temp.put("artist", track.getArtist());
-            temp.put("length", String.valueOf(track.getLength()));
+            temp.put("length", showLength(track.getLength()));
             tracks.add(temp);
         }
+    }
+
+    private String showLength(long milliSeconds) {
+        long seconds = (milliSeconds+999)/1000;
+        long minutes = seconds/60;
+        seconds -= 60 * minutes;
+        long hours = minutes/60;
+        minutes -= 60 * hours;
+        String result = "";
+
+        if (hours != 0){
+            result += hours + ":";
+            if (minutes < 10) {
+                result += "0";
+            }
+        }
+        result += minutes + ":";
+        if (seconds < 10) {
+            result += "0";
+        }
+        result += seconds;
+        return result;
     }
 
     @Override

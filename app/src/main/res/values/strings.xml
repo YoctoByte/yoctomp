@@ -17,7 +17,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
 
-    <!-- Activities -->
+    <!-- Activity names -->
     <string name="activity_home">Home</string>
     <string name="activity_localMusic">Local Music</string>
     <string name="activity_settings">Settings</string>
@@ -25,8 +25,8 @@
     <string name="activity_playlist">Playlist</string>
     <string name="activity_search">Search Music</string>
 
-    <string name="menu_localMusic_addSource">Add Source</string>
-    <string name="menu_localMusic_manageSources">Manage Sources</string>
+    <string name="menu_localMusic_addLibrary">Add Library</string>
+    <string name="menu_localMusic_manageLibraries">Manage Libraries</string>
 
     <string name="preference_file_key">yoctobyte.yoctomp.PREFERENCE_FILE_KEY</string>
 

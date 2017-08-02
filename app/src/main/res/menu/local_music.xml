@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/localMusic_addSource"
-        android:title="@string/menu_localMusic_addSource"
+        android:title="@string/menu_localMusic_addLibrary"
         app:showAsAction="never" />
 
     <item
@@ -14,6 +14,6 @@
 
     <item
         android:id="@+id/localMusic_manageSources"
-        android:title="@string/menu_localMusic_manageSources"
+        android:title="@string/menu_localMusic_manageLibraries"
         app:showAsAction="never" />
 </menu>
