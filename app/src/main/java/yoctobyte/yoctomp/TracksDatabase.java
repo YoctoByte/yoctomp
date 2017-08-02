@@ -129,11 +129,15 @@ public class TracksDatabase extends SQLiteOpenHelper {
     }
 
     private long getId(Track track) {
-        String[] uriString = {track.getUri().toString()};
-        SQLiteDatabase db = getReadableDatabase();
-        String[] columns = {"id", "uri"};
-        Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, columns, "uri=?", uriString, null, null, null, null);
         long id;
+
+        String uri = track.getUri().toString();
+        String columns = "id,uri";
+        String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE uri=" + uri + ";";
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
+
         if (cursor.moveToFirst()) {
             id = cursor.getLong(0);
         } else {
@@ -148,7 +152,6 @@ public class TracksDatabase extends SQLiteOpenHelper {
         long id = getId(track);
         if (id != -1) {
             return id;
-            //db.delete(TABLE_NAME_ALL_TRACKS, "id=?", new String[] {String.valueOf(id)});
         }
         Log.d("addTrack", "Added " + track.getUri().toString());
         SQLiteDatabase db = getWritableDatabase();
@@ -165,9 +168,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
     }
 
     private Track readTrack(long dbId) {
-        String stringDbId = String.valueOf(dbId);
-        String stringColumns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
-        String sqlQuery = "SELECT " + stringColumns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id=" + stringDbId + ";";
+        String columns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+        String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id=" + dbId + ";";
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
@@ -191,8 +193,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
         ArrayList<Track> tracks = new ArrayList<>();
 
         String stringDbIds = TextUtils.join(",", dbIds);
-        String stringColumns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
-        String sqlQuery = "SELECT " + stringColumns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id IN (" + stringDbIds + ");";
+        String columns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+        String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id IN (" + stringDbIds + ");";
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
@@ -209,9 +211,8 @@ public class TracksDatabase extends SQLiteOpenHelper {
                 tracks.add(track);
             } while (cursor.moveToNext());
         }
-
-        db.close();
         cursor.close();
+        db.close();
         return tracks;
     }
 
@@ -236,23 +237,26 @@ public class TracksDatabase extends SQLiteOpenHelper {
             return count;
         }
 
-        public Track readTrack(int id) {
+        public Track readTrack(long id) {
+            String columns = "id,db_id";
+            String sqlQuery = "SELECT " + columns + " FROM " + tableName + " WHERE id=" + id + ";";
             SQLiteDatabase db = getReadableDatabase();
-            String[] columnNames = {};
-            Cursor cursor = db.query(tableName, columnNames, "id=?", new String[]{String.valueOf(id)}, null, null, null, null);
-            if (cursor != null) {
-                cursor.moveToFirst();
+            Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
+
+            if (cursor == null) {
+                return null;
             }
-            long db_id = cursor.getLong(1);
+            cursor.moveToFirst();
+            long dbId = cursor.getLong(1);
             cursor.close();
-            db.close();
-            return TracksDatabase.this.readTrack(db_id);
+            return TracksDatabase.this.readTrack(dbId);
         }
 
         public ArrayList<Track> readTracks() {
+            String columns = "id,db_id";
+            String sqlQuery = "SELECT " + columns + " FROM " + tableName + ";";
             SQLiteDatabase db = getReadableDatabase();
-            String[] columnNames = {};
-            Cursor cursor = db.query(tableName, columnNames, null, null, null, null, null, null);
+            Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
 
             ArrayList<Long> dbIds = new ArrayList<>();
             if (cursor.moveToFirst()) {
@@ -261,18 +265,16 @@ public class TracksDatabase extends SQLiteOpenHelper {
                     dbIds.add(dbId);
                 } while (cursor.moveToNext());
             }
-
             cursor.close();
-            db.close();
-            Log.d("TracksDatabse", "Reading tracks from database");
             return TracksDatabase.this.readTracks(dbIds);
         }
 
         private long getId(long dbId) {
-            String[] dbIdString = {String.valueOf(dbId)};
+            String columns = "id,db_id";
+            String sqlQuery = "SELECT " + columns + " FROM " + tableName + " WHERE db_id=" + dbId + ";";
             SQLiteDatabase db = getReadableDatabase();
-            String[] columns = {"id", "db_id"};
-            Cursor cursor = db.query(tableName, columns, "db_id=?", dbIdString, null, null, null, null);
+            Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
+
             long id;
             if (cursor.moveToFirst()) {
                 id = cursor.getLong(0);
