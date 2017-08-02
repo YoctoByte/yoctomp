@@ -55,8 +55,8 @@ public class LocalMusicFragment extends Fragment {
     }
 
     private void populatePlaylist() {
-        TracksDatabase db = new TracksDatabase(getActivity());
-        TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
+        Database db = new Database(getActivity());
+        Database.TrackTable localTracksTable = db.getTableLocalTracks();
 
         tracks = new ArrayList<>();
         HashMap<String, String> temp = new HashMap<>();
@@ -65,7 +65,7 @@ public class LocalMusicFragment extends Fragment {
         temp.put("length", "1:23");
         tracks.add(temp);
 
-        for (TracksDatabase.Track track: localMusicTable.readTracks()) {
+        for (Database.Track track: localTracksTable.readTracks()) {
             Log.d("", "track read");
             temp = new HashMap<>();
             if (track.getTitle().equals("")) {
@@ -140,12 +140,12 @@ public class LocalMusicFragment extends Fragment {
     }
 
     private class readLibrary extends AsyncTask<Uri, Void, String> {
-        private TracksDatabase.TrackTable localMusicTable;
+        private Database.TrackTable localTracksTable;
 
         @Override
         protected String doInBackground(Uri... treeUri) {
-            TracksDatabase db = new TracksDatabase(getActivity());
-            localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
+            Database db = new Database(getActivity());
+            localTracksTable = db.getTableLocalTracks();
 
             DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri[0]);
             scanDirectory(pickedDir);
@@ -158,7 +158,7 @@ public class LocalMusicFragment extends Fragment {
                 if (file.isDirectory()) {
                     scanDirectory(file);
                 } else if (file.isFile()) {
-                    TracksDatabase.Track track = localMusicTable.newTrack(file.getUri());
+                    Database.Track track = localTracksTable.newTrack(file.getUri());
                     if (track == null) {
                         continue;
                     }
