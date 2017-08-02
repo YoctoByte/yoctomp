@@ -185,12 +185,11 @@ public class TracksDatabase extends SQLiteOpenHelper {
         ArrayList<Track> tracks = new ArrayList<>();
 
         String stringDbIds = TextUtils.join(",", dbIds);
-
-        Log.d("TracksDatabse", stringDbIds);
+        String stringColumns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+        String sqlQuery = "SELECT " + stringColumns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id IN (" + stringDbIds + ");";
 
         SQLiteDatabase db = getReadableDatabase();
-        //Cursor cursor = db.query(TABLE_NAME_ALL_TRACKS, PRIMARY_COLUMN_NAMES, "id IN (?)", new String[] {stringDbIds}, null, null, null, null);
-        Cursor cursor = db.rawQuery("SELECT * FROM all_tracks WHERE id IN (" + stringDbIds+ ");", new String[] {});
+        Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
 
         if (cursor.moveToFirst()) {
             do {
@@ -203,12 +202,10 @@ public class TracksDatabase extends SQLiteOpenHelper {
 
                 tracks.add(track);
             } while (cursor.moveToNext());
-        } else {
-            Log.d("TracksDatabse", "No tracks found");
         }
 
-        cursor.close();
         db.close();
+        cursor.close();
         return tracks;
     }
 
