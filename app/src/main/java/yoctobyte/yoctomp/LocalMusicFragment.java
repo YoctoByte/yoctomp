@@ -74,31 +74,9 @@ public class LocalMusicFragment extends Fragment {
                 temp.put("title", track.getTitle());
             }
             temp.put("artist", track.getArtist());
-            temp.put("length", showLength(track.getLength()));
+            temp.put("length", track.getLengthRepr());
             tracks.add(temp);
         }
-    }
-
-    private String showLength(long milliSeconds) {
-        long seconds = (milliSeconds+999)/1000;
-        long minutes = seconds/60;
-        seconds -= 60 * minutes;
-        long hours = minutes/60;
-        minutes -= 60 * hours;
-        String result = "";
-
-        if (hours != 0){
-            result += hours + ":";
-            if (minutes < 10) {
-                result += "0";
-            }
-        }
-        result += minutes + ":";
-        if (seconds < 10) {
-            result += "0";
-        }
-        result += seconds;
-        return result;
     }
 
     @Override
@@ -158,7 +136,7 @@ public class LocalMusicFragment extends Fragment {
                 if (file.isDirectory()) {
                     scanDirectory(file);
                 } else if (file.isFile()) {
-                    Database.Track track = localTracksTable.newTrack(file.getUri());
+                    Database.Track track = localTracksTable.newTrack(file.getUri(), getActivity());
                     if (track == null) {
                         continue;
                     }
@@ -167,7 +145,7 @@ public class LocalMusicFragment extends Fragment {
                     HashMap<String, String> temp = new HashMap<>();
                     temp.put("title", track.getTitle());
                     temp.put("artist", track.getArtist());
-                    temp.put("length", showLength(track.getLength()));
+                    temp.put("length", track.getLengthRepr());
                     tracks.add(temp);
                     publishProgress();
                 }

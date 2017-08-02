@@ -13,8 +13,14 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Database extends SQLiteOpenHelper {
@@ -28,16 +34,17 @@ public class Database extends SQLiteOpenHelper {
     private static final String TABLE_PREFIX_PLAYLIST = "playlist_";
     private static final String[] NON_PERMITTED_TABLE_NAMES = {TABLE_NAME_ALL_TRACKS, TABLE_NAME_LOCAL_LIBRARIES};
 
-    private static final String[] PRIMARY_COLUMN_NAMES = {"id", "uri", "title", "album", "artist", "length"};
-    private static final String SQL_CREATE_TABLE_PRIMARY = "CREATE TABLE IF NOT EXISTS all_tracks(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR, title VARCHAR, album VARCHAR, artist VARCHAR, length INTEGER, referenced_by VARCHAR);";
+    private static final String SQL_CREATE_TABLE_PRIMARY = "CREATE TABLE IF NOT EXISTS all_tracks(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR, metadata VARCHAR);";
     private static final String SQL_CREATE_TABLE_REFERENCE = "CREATE TABLE IF NOT EXISTS %s(id INTEGER PRIMARY KEY AUTOINCREMENT, db_id INTEGER, FOREIGN KEY(db_id) REFERENCES all_tracks(id));";
-    private static final String SQL_CREATE_TABLE_TABLE_NAMES = "CREATE TABLE IF NOT EXISTS table_names(id INTEGER PRIMARY KEY AUTOINCREMENT, table_name VARCHAR);";
-    private static final String SQL_CREATE_TABLE_LOCAL_LIBRARIES = "CREATE TABLE IF NOT EXISTS local_libraries(id INTEGER PRIMARY KEY AUTOINCREMENT, location VARCHAR);";
+    private static final String SQL_CREATE_TABLE_LOCAL_LIBRARIES = "CREATE TABLE IF NOT EXISTS local_libraries(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR);";
+
+    private static final String[] COLUMN_NAMES_PRIMARY = {"id", "uri", "metadata"};
+    private static final String[] COLUMN_NAMES_REFERENCE = {"id", "db_id"};
+    private static final String[] COLUMN_NAMES_LOCAL_LIBRARY = {"id", "uri"};
 
     public TrackTable getTableLocalTracks() {return new TrackTable(TABLE_NAME_LOCAL_TRACKS);}
     public TrackTable getTableExternaltracks() {return new TrackTable(TABLE_NAME_EXTERNAL_TRACKS);}
     public TrackTable getTablePlaylist(String playlistName) {return new TrackTable(TABLE_PREFIX_PLAYLIST + playlistName);}
-
 
     public Database(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -47,7 +54,6 @@ public class Database extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_PRIMARY);
         sqLiteDatabase.execSQL(String.format(SQL_CREATE_TABLE_REFERENCE, TABLE_NAME_LOCAL_TRACKS));
-        sqLiteDatabase.execSQL(SQL_CREATE_TABLE_TABLE_NAMES);
         sqLiteDatabase.execSQL(SQL_CREATE_TABLE_LOCAL_LIBRARIES);
     }
 
@@ -83,19 +89,19 @@ public class Database extends SQLiteOpenHelper {
             return id;
         }
 
-        private long addTrack(Track track) {
+        private long addTrack(Track track, Context context) {
             long id = getId(track);
             if (id != -1) {
                 return id;
             }
-            Log.d("addTrack", "Added " + track.getUri().toString());
+            track.findMetadata(context);
             SQLiteDatabase db = getWritableDatabase();
             ContentValues contentValues = new ContentValues();
-            contentValues.put("title", track.getTitle().replace("'", "''"));
-            contentValues.put("album", track.getAlbum().replace("'", "''"));
-            contentValues.put("artist", track.getArtist().replace("'", "''"));
-            contentValues.put("uri", track.getUri().toString().replace("'", "''"));
-            contentValues.put("length", track.getLength());
+            contentValues.put("uri", track.getUri().toString());
+            String json = new JSONObject(track.toMap()).toString();
+            Log.d("addTrack map", track.toMap().toString());
+            Log.d("addTrack json", json);
+            contentValues.put("metadata", json);
 
             id = db.insert(TABLE_NAME_ALL_TRACKS, null, contentValues);
             db.close();
@@ -105,7 +111,7 @@ public class Database extends SQLiteOpenHelper {
 
         @Nullable
         private Track getTrack(long dbId) {
-            String columns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+            String columns = TextUtils.join(",", COLUMN_NAMES_PRIMARY);
             String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id=" + dbId + ";";
 
             SQLiteDatabase db = getReadableDatabase();
@@ -116,11 +122,15 @@ public class Database extends SQLiteOpenHelper {
             }
             cursor.moveToFirst();
             Track track = new Track(Uri.parse(cursor.getString(1)));
-            track.setId(cursor.getLong(0));
-            track.setTitle(cursor.getString(2));
-            track.setAlbum(cursor.getString(3));
-            track.setArtist(cursor.getString(4));
-            track.setLength(cursor.getInt(5));
+            Map metadata = new Gson().fromJson(cursor.getString(2), Map.class);
+            track.setTitle((String) metadata.get("title"));
+            track.setAlbum((String) metadata.get("album"));
+            track.setArtist((String) metadata.get("artist"));
+            track.setGenre((String) metadata.get("genre"));
+            track.setYear(Long.parseLong((String) metadata.get("year")));
+            track.setLength(Long.parseLong((String) metadata.get("length")));
+            track.setBitrate((String) metadata.get("bitrate"));
+
             cursor.close();
             db.close();
             return track;
@@ -135,7 +145,7 @@ public class Database extends SQLiteOpenHelper {
             ArrayList<Track> tracks = new ArrayList<>();
 
             String stringDbIds = TextUtils.join(",", dbIds);
-            String columns = TextUtils.join(",", PRIMARY_COLUMN_NAMES);
+            String columns = TextUtils.join(",", COLUMN_NAMES_PRIMARY);
             String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE id IN (" + stringDbIds + ");";
 
             SQLiteDatabase db = getReadableDatabase();
@@ -144,11 +154,16 @@ public class Database extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     Track track = new Track(Uri.parse(cursor.getString(1)));
-                    track.setId(cursor.getLong(0));
-                    track.setTitle(cursor.getString(2));
-                    track.setAlbum(cursor.getString(3));
-                    track.setArtist(cursor.getString(4));
-                    track.setLength(cursor.getInt(5));
+                    Log.d("getTracks string", cursor.getString(2));
+                    Map metadata = new Gson().fromJson(cursor.getString(2), Map.class);
+                    Log.d("getTracks", metadata.toString());
+                    track.setTitle((String) metadata.get("title"));
+                    track.setAlbum((String) metadata.get("album"));
+                    track.setArtist((String) metadata.get("artist"));
+                    track.setGenre((String) metadata.get("genre"));
+                    try {track.setYear(Long.parseLong((String) metadata.get("year")));} catch (NumberFormatException e) {track.setYear(0);}
+                    try {track.setLength(Long.parseLong((String) metadata.get("length")));} catch (NumberFormatException e) {track.setLength(0);}
+                    track.setBitrate((String) metadata.get("bitrate"));
 
                     tracks.add(track);
                 } while (cursor.moveToNext());
@@ -240,16 +255,16 @@ public class Database extends SQLiteOpenHelper {
             return id;
         }
 
-        public Track newTrack(Uri uri) {
+        public Track newTrack(Uri uri, Context context) {
             Track track = new Track(uri);
-            if (addTrack(track) == -1) {
+            if (addTrack(track, context) == -1) {
                 return null;
             }
             return track;
         }
 
-        public long addTrack(Track track) {
-            long db_id = allTracksTable.addTrack(track);
+        public long addTrack(Track track, Context context) {
+            long db_id = allTracksTable.addTrack(track, context);
             if (db_id == -1) {
                 return -1;
             }
@@ -277,8 +292,8 @@ public class Database extends SQLiteOpenHelper {
     }
 
     public class Track {
-        private String artist, album, title;
-        private long id, length;
+        private String artist, album, title, genre, bitrate;
+        private long id, length, year;
         private Uri uri;
 
         public Track(Uri uri) {
@@ -293,13 +308,15 @@ public class Database extends SQLiteOpenHelper {
             title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
             album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
             artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            length = Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+            genre = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+            String yearString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR);
+            try {if (yearString != null) year = Long.parseLong(yearString);} catch (NumberFormatException e) {year = 0;}
+            String lengthString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+            try {if (lengthString != null) length = Long.parseLong(lengthString);} catch (NumberFormatException e) {length = 0;}
+            bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
 
-            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR);
-            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
-            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
-
-            updateDatabase();
+            //TODO (not working)
+            //updateDatabase();
         }
 
         private void updateDatabase() {
@@ -313,6 +330,20 @@ public class Database extends SQLiteOpenHelper {
             db.update(TABLE_NAME_ALL_TRACKS, contentValues, "id="+id, null);
         }
 
+        public Map<String, String> toMap() {
+            Map<String, String> map = new HashMap<>();
+
+            if (title != null) map.put("title", title);
+            if (album != null) map.put("album", album);
+            if (artist != null) map.put("artist", artist);
+            if (genre != null) map.put("genre", genre);
+            if (year != 0) map.put("year", String.valueOf(year));
+            if (length != 0) map.put("length", String.valueOf(length));
+            if (bitrate != null) map.put("bitrate", bitrate);
+
+            return map;
+        }
+
         public long getId() {return id;}
         public String getArtist() {if (artist != null) return artist; else return "";}
         public String getAlbum() {if (album != null) return album; else return "";}
@@ -321,10 +352,33 @@ public class Database extends SQLiteOpenHelper {
         public long getLength() {return length;}
 
         public void setId(long id) {this.id = id;}
-        public void setArtist(String artist) {this.artist = artist;}
-        public void setAlbum(String album) {this.album = album;}
         public void setTitle(String title) {this.title = title;}
-        public void setUri(Uri uri) {this.uri = uri;}
-        public void setLength(int length) {this.length = length;}
+        public void setAlbum(String album) {this.album = album;}
+        public void setArtist(String artist) {this.artist = artist;}
+        public void setGenre(String genre) {this.genre = genre;}
+        public void setYear(long year) {this.year = year;}
+        public void setLength(long length) {this.length = length;}
+        public void setBitrate(String bitrate) {this.bitrate = bitrate;}
+        public String getLengthRepr() {
+            long seconds = (length+999)/1000;
+            long minutes = seconds/60;
+            seconds -= 60 * minutes;
+            long hours = minutes/60;
+            minutes -= 60 * hours;
+            String result = "";
+
+            if (hours != 0){
+                result += hours + ":";
+                if (minutes < 10) {
+                    result += "0";
+                }
+            }
+            result += minutes + ":";
+            if (seconds < 10) {
+                result += "0";
+            }
+            result += seconds;
+            return result;
+        }
     }
 }
