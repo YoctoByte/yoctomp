@@ -140,32 +140,38 @@ public class LocalMusicFragment extends Fragment {
     }
 
     private class readLibrary extends AsyncTask<Uri, Void, String> {
+        private TracksDatabase.TrackTable localMusicTable;
+
         @Override
         protected String doInBackground(Uri... treeUri) {
-            publishProgress();
+            TracksDatabase db = new TracksDatabase(getActivity());
+            localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
 
             DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri[0]);
-
-            TracksDatabase db = new TracksDatabase(getActivity());
-            TracksDatabase.TrackTable localMusicTable = db.getTable(TracksDatabase.getTableNameLocalMusic());
-
-            for (DocumentFile file: pickedDir.listFiles()) {
-                Log.d("onActivityResult", "uri: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
-                TracksDatabase.Track track = localMusicTable.newTrack(file.getUri());
-                if (track == null) {
-                    continue;
-                }
-                track.findMetadata(getActivity());
-
-                HashMap<String, String> temp = new HashMap<>();
-                temp.put("title", track.getTitle());
-                temp.put("artist", track.getArtist());
-                temp.put("length", showLength(track.getLength()));
-                tracks.add(temp);
-                publishProgress();
-            }
+            scanDirectory(pickedDir);
 
             return null;
+        }
+
+        private void scanDirectory(DocumentFile directory) {
+            for (DocumentFile file: directory.listFiles()) {
+                if (file.isDirectory()) {
+                    scanDirectory(file);
+                } else if (file.isFile()) {
+                    TracksDatabase.Track track = localMusicTable.newTrack(file.getUri());
+                    if (track == null) {
+                        continue;
+                    }
+                    track.findMetadata(getActivity());
+
+                    HashMap<String, String> temp = new HashMap<>();
+                    temp.put("title", track.getTitle());
+                    temp.put("artist", track.getArtist());
+                    temp.put("length", showLength(track.getLength()));
+                    tracks.add(temp);
+                    publishProgress();
+                }
+            }
         }
 
         @Override

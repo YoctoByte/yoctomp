@@ -344,8 +344,6 @@ public class TracksDatabase extends SQLiteOpenHelper {
         }
 
         private void updateDatabase() {
-            Log.d("updateDatabse", title);
-
             ContentValues contentValues = new ContentValues();
             contentValues.put("title", title);
             contentValues.put("album", album);
