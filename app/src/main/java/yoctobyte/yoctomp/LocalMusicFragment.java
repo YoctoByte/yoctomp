@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -64,10 +65,14 @@ public class LocalMusicFragment extends Fragment {
         temp.put("length", "1:23");
         tracks.add(temp);
 
-        for (Track track: localMusicTable.readTracks()) {
+        for (TracksDatabase.Track track: localMusicTable.readTracks()) {
             Log.d("", "track read");
             temp = new HashMap<>();
-            temp.put("title", track.getTitle());
+            if (track.getTitle().equals("")) {
+                temp.put("title", track.getUri().getLastPathSegment());
+            } else {
+                temp.put("title", track.getTitle());
+            }
             temp.put("artist", track.getArtist());
             temp.put("length", String.valueOf(track.getLength()));
             tracks.add(temp);
@@ -104,6 +109,9 @@ public class LocalMusicFragment extends Fragment {
 
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         if (requestCode == CHOOSE_DIRECTORY_REQUEST) {
+            if (resultData == null) {
+                return;
+            }
             Uri treeUri = resultData.getData();
             DocumentFile pickedDir = DocumentFile.fromTreeUri(getActivity(), treeUri);
 
@@ -112,9 +120,8 @@ public class LocalMusicFragment extends Fragment {
 
             for (DocumentFile file: pickedDir.listFiles()) {
                 Log.d("onActivityResult", "uri: " + file.getUri() + ", type: " + file.getType() + ", size: " + file.length());
-                Track track = new Track(file.getUri());
+                TracksDatabase.Track track = localMusicTable.newTrack(file.getUri());
                 track.findMetadata(getActivity());
-                localMusicTable.addTrack(track);
             }
         }
     }

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
@@ -131,9 +132,9 @@ public class TracksDatabase extends SQLiteOpenHelper {
     private long getId(Track track) {
         long id;
 
-        String uri = track.getUri().toString();
+        String uri = track.getUri().toString().replace("'", "''");
         String columns = "id,uri";
-        String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE uri=" + uri + ";";
+        String sqlQuery = "SELECT " + columns + " FROM " + TABLE_NAME_ALL_TRACKS + " WHERE uri='" + uri + "';";
 
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(sqlQuery, new String[] {});
@@ -156,14 +157,15 @@ public class TracksDatabase extends SQLiteOpenHelper {
         Log.d("addTrack", "Added " + track.getUri().toString());
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put("title", track.getTitle());
-        contentValues.put("album", track.getAlbum());
-        contentValues.put("artist", track.getArtist());
-        contentValues.put("uri", track.getUri().toString());
+        contentValues.put("title", track.getTitle().replace("'", "''"));
+        contentValues.put("album", track.getAlbum().replace("'", "''"));
+        contentValues.put("artist", track.getArtist().replace("'", "''"));
+        contentValues.put("uri", track.getUri().toString().replace("'", "''"));
         contentValues.put("length", track.getLength());
 
         id = db.insert(TABLE_NAME_ALL_TRACKS, null, contentValues);
         db.close();
+        track.setId(id);
         return id;
     }
 
@@ -286,6 +288,12 @@ public class TracksDatabase extends SQLiteOpenHelper {
             return id;
         }
 
+        public Track newTrack(Uri uri) {
+            Track track = new Track(uri);
+            addTrack(track);
+            return track;
+        }
+
         public long addTrack(Track track) {
             long db_id = TracksDatabase.this.addTrack(track);
             if (db_id == -1) {
@@ -305,5 +313,60 @@ public class TracksDatabase extends SQLiteOpenHelper {
             db.close();
             return id;
         }
+    }
+
+    public class Track {
+        private String artist, album, title;
+        private int length;
+        private long id;
+        private Uri uri;
+
+        public Track(Uri uri) {
+            this.uri = uri;
+        }
+
+        public void findMetadata(Context context) {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            Log.d("findMetadata", uri.getPath());
+            retriever.setDataSource(context, uri);
+
+            title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+            artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            //length = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+
+            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_YEAR);
+            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+            //retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
+
+            updateDatabase();
+        }
+
+        private void updateDatabase() {
+            Log.d("updateDatabse", title);
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("title", title);
+            contentValues.put("album", album);
+            contentValues.put("artist", artist);
+            contentValues.put("length", length);
+
+            SQLiteDatabase db = getWritableDatabase();
+            db.update(TABLE_NAME_ALL_TRACKS, contentValues, "id="+id, null);
+        }
+
+        public long getId() {return id;}
+        public String getArtist() {if (artist != null) return artist; else return "";}
+        public String getAlbum() {if (album != null) return album; else return "";}
+        public String getTitle() {if (title != null) return title; else return "";}
+        public Uri getUri() {return uri;}
+        public int getLength() {return length;}
+
+        public void setId(long id) {this.id = id;}
+        public void setArtist(String artist) {this.artist = artist;}
+        public void setAlbum(String album) {this.album = album;}
+        public void setTitle(String title) {this.title = title;}
+        public void setUri(Uri uri) {this.uri = uri;}
+        public void setLength(int length) {this.length = length;}
     }
 }
