@@ -2,20 +2,16 @@
 <resources>
     <string name="app_name">yoctomp</string>
 
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <!-- Navigation drawer -->
+    <string name="drawer_home">Home</string>
+    <string name="drawer_local_music">Local music</string>
+    <string name="drawer_playlists">Playlists</string>
+    <string name="drawer_create_playlist">New playlist</string>
+    <string name="drawer_settings">Settings</string>
+    <string name="drawer_info">Info &amp; Feedback</string>
 
-    <!-- Navigation Drawer -->
-    <string name="nav_open">Open navigation drawer</string>
-    <string name="nav_close">Close navigation drawer</string>
-    <string name="nav_settings">Settings</string>
-    <string name="nav_account">Sign in</string>
-    <string name="nav_home">Home</string>
-    <string name="nav_createPlaylist">New playlist</string>
-    <string name="nav_playlists">Playlists</string>
-    <string name="nav_localMusic">Local music</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_settings">Settings</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
     <!-- Activity names -->
     <string name="activity_home">Home</string>
@@ -23,11 +19,18 @@
     <string name="activity_settings">Settings</string>
     <string name="activity_account">Account</string>
     <string name="activity_playlist">Playlist</string>
-    <string name="activity_search">Search Music</string>
+    <string name="activity_search">Find Music</string>
 
-    <string name="menu_localMusic_addLibrary">Add Library</string>
-    <string name="menu_localMusic_manageLibraries">Manage Libraries</string>
+    <!-- Local music menu -->
+    <string name="menu_local_music_add_library">Add Library</string>
+    <string name="menu_local_music_manage_libraries">Manage Libraries</string>
+    <string name="menu_local_music_refresh">Refresh</string>
 
-    <string name="preference_file_key">yoctobyte.yoctomp.PREFERENCE_FILE_KEY</string>
+    <!-- Track menu -->
+    <string name="menu_track_play">Play</string>
+    <string name="menu_track_add_to_playlist">Add to playlist</string>
+    <string name="menu_track_add_to_queue">Add to queue</string>
+    <string name="menu_track_remove">Remove</string>
+
 
 </resources>

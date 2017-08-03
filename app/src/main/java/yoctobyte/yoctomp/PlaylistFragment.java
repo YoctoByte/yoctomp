@@ -35,7 +35,7 @@ public class PlaylistFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         listview = view.findViewById(R.id.playlistView);
-        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.playlist_track,
+        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
 
         listview.setAdapter(simpleAdapter);

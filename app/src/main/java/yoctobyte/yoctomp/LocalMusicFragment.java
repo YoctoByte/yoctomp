@@ -42,7 +42,7 @@ public class LocalMusicFragment extends PlaylistFragment {
         if (tracks.size() == 0) {
             populatePlaylist();
         }
-        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.playlist_track,
+        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
         listview.setAdapter(simpleAdapter);
         simpleAdapter.notifyDataSetChanged();
@@ -79,7 +79,7 @@ public class LocalMusicFragment extends PlaylistFragment {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivityForResult(intent, CHOOSE_DIRECTORY_REQUEST);
             return true;
-        } else if (id == R.id.localMusic_deleteDatabase) {
+        } else if (id == R.id.local_music_delete_database) {
             getActivity().deleteDatabase("db_yoctomp");
             return true;
         } else if (id == R.id.localMusic_manageSources) {

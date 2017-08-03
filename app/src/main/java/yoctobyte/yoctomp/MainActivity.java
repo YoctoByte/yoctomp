@@ -29,11 +29,11 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        fragmentClasses.put(R.id.nav_home, HomeFragment.class);
-        fragmentClasses.put(R.id.nav_local_music, LocalMusicFragment.class);
-        fragmentClasses.put(R.id.nav_create_playlist, CreatePlaylistFragment.class);
+        fragmentClasses.put(R.id.drawer_home, HomeFragment.class);
+        fragmentClasses.put(R.id.drawer_local_music, LocalMusicFragment.class);
+        fragmentClasses.put(R.id.drawer_create_playlist, CreatePlaylistFragment.class);
         fragmentClasses.put(R.id.nav_settings, SettingsFragment.class);
-        fragmentClasses.put(R.id.nav_account, AccountFragment.class);
+        fragmentClasses.put(R.id.drawer_info, AccountFragment.class);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 

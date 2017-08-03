@@ -4,16 +4,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/localMusic_addSource"
-        android:title="@string/menu_localMusic_addLibrary"
+        android:title="@string/menu_local_music_add_library"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/localMusic_deleteDatabase"
+        android:id="@+id/local_music_delete_database"
         android:title="Delete Database"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/localMusic_manageSources"
-        android:title="@string/menu_localMusic_manageLibraries"
+        android:title="@string/menu_local_music_manage_libraries"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menuLocalMusicRefresh"
+        android:title="@string/menu_local_music_refresh"
         app:showAsAction="never" />
 </menu>

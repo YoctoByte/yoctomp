@@ -1,7 +1,6 @@
 package yoctobyte.yoctomp;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -82,7 +81,7 @@ public class HomeFragment extends Fragment {
         //noinspection SimplifiableIfStatement
         if (id == R.id.localMusic_addSource) {
             return true;
-        } else if (id == R.id.localMusic_deleteDatabase) {
+        } else if (id == R.id.local_music_delete_database) {
             getActivity().deleteDatabase("db_yoctomp");
             return true;
         } else if (id == R.id.localMusic_manageSources) {

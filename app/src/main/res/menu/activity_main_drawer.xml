@@ -2,35 +2,35 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_home"
+        android:id="@+id/drawer_home"
         android:icon="@drawable/ic_home_white_24px"
-        android:title="@string/nav_home" />
+        android:title="@string/drawer_home" />
 
     <item
-        android:id="@+id/nav_local_music"
+        android:id="@+id/drawer_local_music"
         android:icon="@drawable/ic_library_music_white_24px"
-        android:title="@string/nav_localMusic" />
+        android:title="@string/drawer_local_music" />
 
-    <group android:id="@+id/nav_group_playlists">
-        <item android:title="@string/nav_playlists">
+    <group android:id="@+id/drawer_group_playlists">
+        <item android:title="@string/drawer_playlists">
             <menu>
                 <item
-                    android:id="@+id/nav_create_playlist"
+                    android:id="@+id/drawer_create_playlist"
                     android:icon="@drawable/ic_playlist_add_white_24px"
-                    android:title="@string/nav_createPlaylist" />
+                    android:title="@string/drawer_create_playlist" />
             </menu>
         </item>
     </group>
 
-    <group android:id="@+id/nav_group_settings">
+    <group android:id="@+id/drawer_group_footer">
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_settings_white_24px"
-            android:title="@string/nav_settings" />
+            android:title="@string/drawer_settings" />
         <item
-            android:id="@+id/nav_account"
-            android:icon="@drawable/ic_account_box_white_24px"
-            android:title="@string/nav_account"/>
+            android:id="@+id/drawer_info"
+            android:icon="@drawable/ic_info_white_24px"
+            android:title="@string/drawer_info"/>
     </group>
 
 </menu>
