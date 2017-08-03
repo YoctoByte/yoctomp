@@ -15,10 +15,10 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         HomeFragment.OnFragmentInteractionListener,
-        LocalMusicFragment.OnFragmentInteractionListener,
         CreatePlaylistFragment.OnFragmentInteractionListener,
         AccountFragment.OnFragmentInteractionListener,
-        SettingsFragment.OnFragmentInteractionListener{
+        SettingsFragment.OnFragmentInteractionListener,
+        PlaylistFragment.OnFragmentInteractionListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +29,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             Fragment fragment = null;
-            Class fragmentClass = null;
-            fragmentClass = HomeFragment.class;
+            Class fragmentClass = HomeFragment.class;
             try {
                 fragment = (Fragment) fragmentClass.newInstance();
             } catch (Exception e) {
@@ -42,8 +41,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
@@ -61,7 +59,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -80,7 +77,9 @@ public class MainActivity extends AppCompatActivity
             fragmentClass = AccountFragment.class;
         }
         try {
-            fragment = (Fragment) fragmentClass.newInstance();
+            if (fragmentClass != null) {
+                fragment = (Fragment) fragmentClass.newInstance();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,6 +88,10 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
+        if (id == R.id.nav_local_music) {
+            // todo: interface communication
+        }
         return true;
     }
 

@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.provider.DocumentFile;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,20 +15,16 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
-public class LocalMusicFragment extends Fragment {
+public class LocalMusicFragment extends PlaylistFragment {
     static final int CHOOSE_DIRECTORY_REQUEST = 42;
 
-    static ArrayList<HashMap<String, String>> tracks = new ArrayList<>();
     ListView listview;
     SimpleAdapter simpleAdapter;
 
 
-    public LocalMusicFragment() {
-        // Required empty public constructor
-    }
+    public LocalMusicFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,11 +36,11 @@ public class LocalMusicFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_local_music, container, false);
+        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
 
-        listview = view.findViewById(R.id.localMusicListview);
+        listview = view.findViewById(R.id.playlistView);
         populatePlaylist();
-        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.listview_track,
+        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.playlist_track,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
         listview.setAdapter(simpleAdapter);
         simpleAdapter.notifyDataSetChanged();
@@ -56,32 +50,13 @@ public class LocalMusicFragment extends Fragment {
 
     private void populatePlaylist() {
         Database db = new Database(getActivity());
-        Database.TrackTable localTracksTable = db.getTableLocalTracks();
+        Database.TrackTable playlistTable = db.getTableLocalTracks();
 
         tracks = new ArrayList<>();
-        HashMap<String, String> temp = new HashMap<>();
-        temp.put("title", "test title");
-        temp.put("artist", "test artist");
-        temp.put("length", "1:23");
-        tracks.add(temp);
-
-        for (Database.Track track: localTracksTable.readTracks()) {
-            Log.d("", "track read");
-            temp = new HashMap<>();
-            if (track.getTitle().equals("")) {
-                temp.put("title", uriToFilename(track.getUri()));
-            } else {
-                temp.put("title", track.getTitle());
-            }
-            temp.put("artist", track.getArtist());
-            temp.put("length", track.getLengthRepr());
-            tracks.add(temp);
+        for (Database.Track track: playlistTable.readTracks()) {
+            updateTracks(track);
         }
-    }
-
-    private String uriToFilename(Uri uri) {
-        String[] segments = uri.getPath().split("/");
-        return segments[segments.length-1];
+        if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -146,16 +121,7 @@ public class LocalMusicFragment extends Fragment {
                         continue;
                     }
                     track.findMetadata(getActivity());
-
-                    HashMap<String, String> temp = new HashMap<>();
-                    if (track.getTitle().equals("")) {
-                        temp.put("title", uriToFilename(track.getUri()));
-                    } else {
-                        temp.put("title", track.getTitle());
-                    }
-                    temp.put("artist", track.getArtist());
-                    temp.put("length", track.getLengthRepr());
-                    tracks.add(temp);
+                    updateTracks(track);
                     publishProgress();
                 }
             }
