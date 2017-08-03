@@ -45,11 +45,11 @@ public class LocalMusicFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_local_music, container, false);
 
         listview = view.findViewById(R.id.localMusicListview);
-        Log.d("LocalMusicFragment", String.valueOf(listview));
         populatePlaylist();
         simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.listview_track,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
         listview.setAdapter(simpleAdapter);
+        simpleAdapter.notifyDataSetChanged();
 
         return view;
     }
@@ -69,7 +69,7 @@ public class LocalMusicFragment extends Fragment {
             Log.d("", "track read");
             temp = new HashMap<>();
             if (track.getTitle().equals("")) {
-                temp.put("title", track.getUri().getLastPathSegment());
+                temp.put("title", uriToFilename(track.getUri()));
             } else {
                 temp.put("title", track.getTitle());
             }
@@ -77,6 +77,11 @@ public class LocalMusicFragment extends Fragment {
             temp.put("length", track.getLengthRepr());
             tracks.add(temp);
         }
+    }
+
+    private String uriToFilename(Uri uri) {
+        String[] segments = uri.getPath().split("/");
+        return segments[segments.length-1];
     }
 
     @Override
@@ -143,7 +148,11 @@ public class LocalMusicFragment extends Fragment {
                     track.findMetadata(getActivity());
 
                     HashMap<String, String> temp = new HashMap<>();
-                    temp.put("title", track.getTitle());
+                    if (track.getTitle().equals("")) {
+                        temp.put("title", uriToFilename(track.getUri()));
+                    } else {
+                        temp.put("title", track.getTitle());
+                    }
                     temp.put("artist", track.getArtist());
                     temp.put("length", track.getLengthRepr());
                     tracks.add(temp);
