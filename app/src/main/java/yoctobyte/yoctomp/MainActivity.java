@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         HomeFragment.OnFragmentInteractionListener,
         CreatePlaylistFragment.OnFragmentInteractionListener,
-        AccountFragment.OnFragmentInteractionListener,
+        InfoFragment.OnFragmentInteractionListener,
         SettingsFragment.OnFragmentInteractionListener,
         PlaylistFragment.OnFragmentInteractionListener{
 
@@ -28,30 +28,37 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        // Preload fragments
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment;
+        Class fragmentClass;
 
         fragmentClasses.put(R.id.drawer_home, HomeFragment.class);
         fragmentClasses.put(R.id.drawer_local_music, LocalMusicFragment.class);
         fragmentClasses.put(R.id.drawer_create_playlist, CreatePlaylistFragment.class);
         fragmentClasses.put(R.id.nav_settings, SettingsFragment.class);
-        fragmentClasses.put(R.id.drawer_info, AccountFragment.class);
+        fragmentClasses.put(R.id.drawer_info, InfoFragment.class);
 
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        if (savedInstanceState == null) {
-            Fragment fragment = null;
-            Class fragmentClass = HomeFragment.class;
+        for (int i=0; i<fragmentClasses.size(); i++) {
+            int navId = fragmentClasses.keyAt(i);
+            fragmentClass = fragmentClasses.get(navId);
             try {
                 fragment = (Fragment) fragmentClass.newInstance();
+                fragmentManager.beginTransaction().attach(fragment).commit();
+                activeFragments.put(navId, fragment);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
         }
 
+        fragmentManager.beginTransaction().replace(R.id.main_content, activeFragments.get(R.id.drawer_home)).commit();
+
+        // Create drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawer.addDrawerListener(toggle);

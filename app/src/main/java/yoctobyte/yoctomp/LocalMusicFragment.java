@@ -5,13 +5,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.provider.DocumentFile;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import java.util.ArrayList;
@@ -19,8 +15,6 @@ import java.util.ArrayList;
 
 public class LocalMusicFragment extends PlaylistFragment {
     private static final int CHOOSE_DIRECTORY_REQUEST = 42;
-
-    ListView listview;
     SimpleAdapter simpleAdapter;
 
 
@@ -30,24 +24,14 @@ public class LocalMusicFragment extends PlaylistFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
-
-        listview = view.findViewById(R.id.playlistView);
         if (tracks.size() == 0) {
             populatePlaylist();
         }
+
         simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
-        listview.setAdapter(simpleAdapter);
-        simpleAdapter.notifyDataSetChanged();
-
-        return view;
+        setListAdapter(simpleAdapter);
     }
 
     private void populatePlaylist() {

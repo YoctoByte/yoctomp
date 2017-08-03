@@ -1,26 +1,25 @@
 package yoctobyte.yoctomp;
 
 
-import android.content.Context;
+import android.support.v4.app.ListFragment;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.app.ActionBar;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PlaylistFragment extends Fragment {
+
+public class PlaylistFragment extends ListFragment {
     protected ArrayList<HashMap<String, String>> tracks = new ArrayList<>();
-    private ListView listview;
     private SimpleAdapter simpleAdapter;
-    private OnFragmentInteractionListener listener;
     private String playlistName;
+    private MediaPlayer mediaPlayer;
 
 
     public PlaylistFragment() {}
@@ -29,33 +28,22 @@ public class PlaylistFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-    }
+        mediaPlayer = new MediaPlayer();
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
-        listview = view.findViewById(R.id.playlistView);
         simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
+        setListAdapter(simpleAdapter);
 
-        listview.setAdapter(simpleAdapter);
         if (tracks.size() == 0) {
             populatePlaylist();
         }
-        return view;
     }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            listener = (OnFragmentInteractionListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnHeadlineSelectedListener");
-        }
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Log.d("onListItemClick", String.valueOf(getSelectedItemId()));
+        Log.d("onListItemClick", String.valueOf(getSelectedItemPosition()));
     }
 
     public void setPlaylistName(String playlistName) {
@@ -73,7 +61,7 @@ public class PlaylistFragment extends Fragment {
 
         tracks = new ArrayList<>();
         for (Database.Track track: playlistTable.readTracks()) {
-            tracks.add(populateMap(track));
+            updateTracks(track);
         }
 
         if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
@@ -89,18 +77,6 @@ public class PlaylistFragment extends Fragment {
         temp.put("artist", track.getArtist());
         temp.put("length", track.getLengthRepr());
         tracks.add(temp);
-    }
-
-    protected HashMap<String, String> populateMap(Database.Track track) {
-        HashMap<String, String> result = new HashMap<>();
-        if (track.getTitle().equals("")) {
-            result.put("title", uriToFilename(track.getUri()));
-        } else {
-            result.put("title", track.getTitle());
-        }
-        result.put("artist", track.getArtist());
-        result.put("length", track.getLengthRepr());
-        return result;
     }
 
     protected String uriToFilename(Uri uri) {
