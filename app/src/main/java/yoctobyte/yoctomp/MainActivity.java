@@ -10,9 +10,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseArray;
 import android.view.MenuItem;
 
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -22,8 +22,8 @@ public class MainActivity extends AppCompatActivity
         SettingsFragment.OnFragmentInteractionListener,
         PlaylistFragment.OnFragmentInteractionListener{
 
-    private HashMap<Integer, Fragment> activeFragments = new HashMap<>();
-    private HashMap<Integer, Class> fragmentClasses = new HashMap<>();
+    private SparseArray<Fragment> activeFragments = new SparseArray<>();
+    private SparseArray<Class> fragmentClasses = new SparseArray<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,15 +77,18 @@ public class MainActivity extends AppCompatActivity
         Class fragmentClass;
         FragmentManager fragmentManager;
 
-        for (HashMap.Entry<Integer, Class> entry: fragmentClasses.entrySet()) {
-            int navId = entry.getKey();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+
+        for (int i=0; i<fragmentClasses.size(); i++) {
+            int navId = fragmentClasses.keyAt(i);
             if (item.getItemId() == navId) {
-                if (activeFragments.containsKey(navId)) {
+                if (activeFragments.indexOfKey(navId) >= 0) {
                     fragment = activeFragments.get(navId);
                     fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
                 } else {
-                    fragmentClass = entry.getValue();
+                    fragmentClass = fragmentClasses.get(navId);
                     try {
                         fragment = (Fragment) fragmentClass.newInstance();
                         fragmentManager = getSupportFragmentManager();
@@ -97,9 +100,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
 
         return true;
     }
