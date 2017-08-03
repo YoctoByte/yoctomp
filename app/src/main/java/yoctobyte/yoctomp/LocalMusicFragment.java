@@ -136,7 +136,7 @@ public class LocalMusicFragment extends Fragment {
                 if (file.isDirectory()) {
                     scanDirectory(file);
                 } else if (file.isFile()) {
-                    Database.Track track = localTracksTable.newTrack(file.getUri(), getActivity());
+                    Database.Track track = localTracksTable.newTrack(file.getUri());
                     if (track == null) {
                         continue;
                     }

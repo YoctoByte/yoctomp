@@ -39,8 +39,11 @@ public class Database extends SQLiteOpenHelper {
     private static final String SQL_CREATE_TABLE_LOCAL_LIBRARIES = "CREATE TABLE IF NOT EXISTS local_libraries(id INTEGER PRIMARY KEY AUTOINCREMENT, uri VARCHAR);";
 
     private static final String[] COLUMN_NAMES_PRIMARY = {"id", "uri", "metadata"};
+    private static final String[] COLUMN_TYPES_PRIMARY = {"INTEGER PRIMARY KEY AUTOINCREMENT", "VARCHAR", "VARCHAR"};
     private static final String[] COLUMN_NAMES_REFERENCE = {"id", "db_id"};
+    private static final String[] COLUMN_TYPES_REFERENCE = {"INTEGER PRIMARY KEY AUTOINCREMENT", "INTEGER"};
     private static final String[] COLUMN_NAMES_LOCAL_LIBRARY = {"id", "uri"};
+    private static final String[] COLUMN_TYPES_LOCAL_LIBRARY = {"INTEGER PRIMARY KEY AUTOINCREMENT", "VARCHAR"};
 
     public TrackTable getTableLocalTracks() {return new TrackTable(TABLE_NAME_LOCAL_TRACKS);}
     public TrackTable getTableExternaltracks() {return new TrackTable(TABLE_NAME_EXTERNAL_TRACKS);}
@@ -58,14 +61,15 @@ public class Database extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        String sqlDropAllTracks = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_ALL_TRACKS);
-        String sqlDropLocalMusic = String.format("DROP TABLE IF EXISTS %s;", TABLE_NAME_LOCAL_TRACKS);
-
-        sqLiteDatabase.execSQL(sqlDropAllTracks);
-        sqLiteDatabase.execSQL(sqlDropLocalMusic);
-
+    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
         onCreate(sqLiteDatabase);
+
+        for (int i=0; i<Math.min(COLUMN_NAMES_PRIMARY.length, COLUMN_TYPES_PRIMARY.length); i++) {
+            sqLiteDatabase.execSQL("ALTER TABLE " + TABLE_NAME_ALL_TRACKS + " ADD COLUMN " + COLUMN_NAMES_PRIMARY[i] + " " + COLUMN_TYPES_PRIMARY[i] + ";");
+        }
+        for (int i=0; i<Math.min(COLUMN_NAMES_LOCAL_LIBRARY.length, COLUMN_TYPES_LOCAL_LIBRARY.length); i++) {
+            sqLiteDatabase.execSQL("ALTER TABLE " + TABLE_NAME_LOCAL_LIBRARIES + " ADD COLUMN " + COLUMN_NAMES_LOCAL_LIBRARY[i] + " " + COLUMN_TYPES_LOCAL_LIBRARY[i] + ";");
+        }
     }
 
     private class AllTracksTable {
@@ -89,17 +93,15 @@ public class Database extends SQLiteOpenHelper {
             return id;
         }
 
-        private long addTrack(Track track, Context context) {
+        private long addTrack(Track track) {
             long id = getId(track);
             if (id != -1) {
                 return id;
             }
-            track.findMetadata(context);
             SQLiteDatabase db = getWritableDatabase();
             ContentValues contentValues = new ContentValues();
             contentValues.put("uri", track.getUri().toString());
-            String json = new JSONObject(track.toMap()).toString();
-            Log.d("addTrack map", track.toMap().toString());
+            String json = track.toJSON();
             Log.d("addTrack json", json);
             contentValues.put("metadata", json);
 
@@ -255,16 +257,16 @@ public class Database extends SQLiteOpenHelper {
             return id;
         }
 
-        public Track newTrack(Uri uri, Context context) {
+        public Track newTrack(Uri uri) {
             Track track = new Track(uri);
-            if (addTrack(track, context) == -1) {
+            if (addTrack(track) == -1) {
                 return null;
             }
             return track;
         }
 
-        public long addTrack(Track track, Context context) {
-            long db_id = allTracksTable.addTrack(track, context);
+        public long addTrack(Track track) {
+            long db_id = allTracksTable.addTrack(track);
             if (db_id == -1) {
                 return -1;
             }
@@ -315,19 +317,21 @@ public class Database extends SQLiteOpenHelper {
             try {if (lengthString != null) length = Long.parseLong(lengthString);} catch (NumberFormatException e) {length = 0;}
             bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
 
-            //TODO (not working)
-            //updateDatabase();
+            updateDatabase();
         }
 
         private void updateDatabase() {
             ContentValues contentValues = new ContentValues();
-            contentValues.put("title", title);
-            contentValues.put("album", album);
-            contentValues.put("artist", artist);
-            contentValues.put("length", length);
+            contentValues.put("uri", uri.toString());
+            contentValues.put("metadata", toJSON());
 
             SQLiteDatabase db = getWritableDatabase();
             db.update(TABLE_NAME_ALL_TRACKS, contentValues, "id="+id, null);
+            db.close();
+        }
+
+        public String toJSON() {
+            return new JSONObject(toMap()).toString();
         }
 
         public Map<String, String> toMap() {
