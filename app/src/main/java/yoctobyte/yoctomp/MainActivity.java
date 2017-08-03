@@ -1,5 +1,6 @@
 package yoctobyte.yoctomp;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -12,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         HomeFragment.OnFragmentInteractionListener,
@@ -20,9 +23,19 @@ public class MainActivity extends AppCompatActivity
         SettingsFragment.OnFragmentInteractionListener,
         PlaylistFragment.OnFragmentInteractionListener{
 
+    private HashMap<Integer, Fragment> activeFragments = new HashMap<>();
+    private HashMap<Integer, Class> fragmentClasses = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fragmentClasses.put(R.id.nav_home, HomeFragment.class);
+        fragmentClasses.put(R.id.nav_local_music, LocalMusicFragment.class);
+        fragmentClasses.put(R.id.nav_create_playlist, CreatePlaylistFragment.class);
+        fragmentClasses.put(R.id.nav_settings, SettingsFragment.class);
+        fragmentClasses.put(R.id.nav_account, AccountFragment.class);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -42,7 +55,7 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -61,37 +74,27 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-        Fragment fragment = null;
-        Class fragmentClass = null;
-        if (id == R.id.nav_home) {
-            fragmentClass = HomeFragment.class;
-        } else if (id == R.id.nav_local_music) {
-            fragmentClass = LocalMusicFragment.class;
-        } else if (id == R.id.nav_create_playlist) {
-            fragmentClass = CreatePlaylistFragment.class;
-        } else if (id == R.id.nav_settings) {
-            fragmentClass = SettingsFragment.class;
-        } else if (id == R.id.nav_account) {
-            fragmentClass = AccountFragment.class;
-        }
-        try {
-            if (fragmentClass != null) {
-                fragment = (Fragment) fragmentClass.newInstance();
+        Fragment fragment;
+        Class fragmentClass;
+        FragmentManager fragmentManager;
+
+        for (HashMap.Entry<Integer, Class> entry: fragmentClasses.entrySet()) {
+            int navId = entry.getKey();
+            if (item.getItemId() == navId) {
+                fragmentClass = entry.getValue();
+                try {
+                    fragment = (Fragment) fragmentClass.newInstance();
+                    fragmentManager = getSupportFragmentManager();
+                    fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
 
-        if (id == R.id.nav_local_music) {
-            // todo: interface communication
-        }
         return true;
     }
 

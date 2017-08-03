@@ -18,8 +18,8 @@ import java.util.ArrayList;
 
 
 public class LocalMusicFragment extends PlaylistFragment {
-    static final int CHOOSE_DIRECTORY_REQUEST = 42;
-
+    private static final int CHOOSE_DIRECTORY_REQUEST = 42;
+    
     ListView listview;
     SimpleAdapter simpleAdapter;
 

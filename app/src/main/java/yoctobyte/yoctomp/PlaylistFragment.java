@@ -28,6 +28,7 @@ public class PlaylistFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -38,8 +39,9 @@ public class PlaylistFragment extends Fragment {
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
 
         listview.setAdapter(simpleAdapter);
-        populatePlaylist();
-
+        if (tracks.size() == 0) {
+            populatePlaylist();
+        }
         return view;
     }
 
