@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public class LocalMusicFragment extends PlaylistFragment {
     private static final int CHOOSE_DIRECTORY_REQUEST = 42;
-    
+
     ListView listview;
     SimpleAdapter simpleAdapter;
 
@@ -39,7 +39,9 @@ public class LocalMusicFragment extends PlaylistFragment {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
 
         listview = view.findViewById(R.id.playlistView);
-        populatePlaylist();
+        if (tracks.size() == 0) {
+            populatePlaylist();
+        }
         simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.playlist_track,
                 new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
         listview.setAdapter(simpleAdapter);

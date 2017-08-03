@@ -1,6 +1,5 @@
 package yoctobyte.yoctomp;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -81,13 +80,20 @@ public class MainActivity extends AppCompatActivity
         for (HashMap.Entry<Integer, Class> entry: fragmentClasses.entrySet()) {
             int navId = entry.getKey();
             if (item.getItemId() == navId) {
-                fragmentClass = entry.getValue();
-                try {
-                    fragment = (Fragment) fragmentClass.newInstance();
+                if (activeFragments.containsKey(navId)) {
+                    fragment = activeFragments.get(navId);
                     fragmentManager = getSupportFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } else {
+                    fragmentClass = entry.getValue();
+                    try {
+                        fragment = (Fragment) fragmentClass.newInstance();
+                        fragmentManager = getSupportFragmentManager();
+                        fragmentManager.beginTransaction().replace(R.id.main_content, fragment).commit();
+                        activeFragments.put(navId, fragment);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
