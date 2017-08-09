@@ -1,27 +1,22 @@
-package yoctobyte.yoctomp;
+package yoctobyte.yoctomp.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.provider.DocumentFile;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
-import java.util.ArrayList;
+import yoctobyte.yoctomp.R;
+import yoctobyte.yoctomp.data.Database;
+import yoctobyte.yoctomp.data.Track;
+import yoctobyte.yoctomp.data.TrackTable;
 
 
 public class LocalMusicFragment extends PlaylistFragment {
     private static final int CHOOSE_DIRECTORY_REQUEST = 42;
-
-    ListView listview;
-    SimpleAdapter simpleAdapter;
 
 
     public LocalMusicFragment() {}
@@ -30,35 +25,22 @@ public class LocalMusicFragment extends PlaylistFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
-
-        listview = view.findViewById(R.id.playlistView);
-        if (tracks.size() == 0) {
+        if (playlistAdapter.isEmpty()) {
             populatePlaylist();
         }
-        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
-                new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
-        listview.setAdapter(simpleAdapter);
-        simpleAdapter.notifyDataSetChanged();
-
-        return view;
     }
 
     private void populatePlaylist() {
         Database db = new Database(getActivity());
-        Database.TrackTable playlistTable = db.getTableLocalTracks();
+        TrackTable playlistTable = db.getTableLocalTracks();
 
-        tracks = new ArrayList<>();
-        for (Database.Track track: playlistTable.readTracks()) {
-            updateTracks(track);
+        playlistAdapter.empty();
+        for (Track track: playlistTable.readTracks()) {
+            playlistAdapter.addTrack(track);
         }
-        if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
+
+        playlistAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -81,6 +63,8 @@ public class LocalMusicFragment extends PlaylistFragment {
             return true;
         } else if (id == R.id.local_music_delete_database) {
             getActivity().deleteDatabase("db_yoctomp");
+            playlistAdapter.empty();
+            playlistAdapter.notifyDataSetChanged();
             return true;
         } else if (id == R.id.localMusic_manageSources) {
             return true;
@@ -100,7 +84,7 @@ public class LocalMusicFragment extends PlaylistFragment {
     }
 
     private class readLibrary extends AsyncTask<Uri, Void, String> {
-        private Database.TrackTable localTracksTable;
+        private TrackTable localTracksTable;
 
         @Override
         protected String doInBackground(Uri... treeUri) {
@@ -118,12 +102,12 @@ public class LocalMusicFragment extends PlaylistFragment {
                 if (file.isDirectory()) {
                     scanDirectory(file);
                 } else if (file.isFile()) {
-                    Database.Track track = localTracksTable.newTrack(file.getUri());
+                    Track track = localTracksTable.newTrack(file.getUri());
                     if (track == null) {
                         continue;
                     }
                     track.findMetadata(getActivity());
-                    updateTracks(track);
+                    playlistAdapter.addTrack(track);
                     publishProgress();
                 }
             }
@@ -132,7 +116,7 @@ public class LocalMusicFragment extends PlaylistFragment {
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
-            simpleAdapter.notifyDataSetChanged();
+            playlistAdapter.notifyDataSetChanged();
         }
     }
 
