@@ -8,9 +8,6 @@ import android.support.v4.provider.DocumentFile;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.SimpleAdapter;
-
-import java.util.ArrayList;
 
 import yoctobyte.yoctomp.R;
 import yoctobyte.yoctomp.data.Database;
@@ -20,7 +17,6 @@ import yoctobyte.yoctomp.data.TrackTable;
 
 public class LocalMusicFragment extends PlaylistFragment {
     private static final int CHOOSE_DIRECTORY_REQUEST = 42;
-    SimpleAdapter simpleAdapter;
 
 
     public LocalMusicFragment() {}
@@ -29,25 +25,17 @@ public class LocalMusicFragment extends PlaylistFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        if (tracks.size() == 0) {
-            populatePlaylist();
-        }
-
-        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
-                new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
-        setListAdapter(simpleAdapter);
+        populatePlaylist();
     }
 
     private void populatePlaylist() {
         Database db = new Database(getActivity());
         TrackTable playlistTable = db.getTableLocalTracks();
 
-        tracks = new ArrayList<>();
+        playlistAdapter.empty();
         for (Track track: playlistTable.readTracks()) {
-            updateTracks(track);
+            playlistAdapter.addTrack(track);
         }
-        if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -112,7 +100,7 @@ public class LocalMusicFragment extends PlaylistFragment {
                         continue;
                     }
                     track.findMetadata(getActivity());
-                    updateTracks(track);
+                    playlistAdapter.addTrack(track);
                     publishProgress();
                 }
             }
@@ -121,7 +109,7 @@ public class LocalMusicFragment extends PlaylistFragment {
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
-            simpleAdapter.notifyDataSetChanged();
+            playlistAdapter.notifyDataSetChanged();
         }
     }
 
