@@ -13,6 +13,10 @@
         android:title="@string/menu_track_add_to_queue" />
 
     <item
+        android:id="@+id/track_menu_edit"
+        android:title="@string/menu_track_edit" />
+
+    <item
         android:id="@+id/track_menu_remove"
         android:title="@string/menu_track_remove" />
 </menu>
