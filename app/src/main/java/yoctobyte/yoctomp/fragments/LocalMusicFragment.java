@@ -1,4 +1,4 @@
-package yoctobyte.yoctomp;
+package yoctobyte.yoctomp.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,6 +11,11 @@ import android.view.MenuItem;
 import android.widget.SimpleAdapter;
 
 import java.util.ArrayList;
+
+import yoctobyte.yoctomp.R;
+import yoctobyte.yoctomp.data.Database;
+import yoctobyte.yoctomp.data.Track;
+import yoctobyte.yoctomp.data.TrackTable;
 
 
 public class LocalMusicFragment extends PlaylistFragment {
@@ -36,10 +41,10 @@ public class LocalMusicFragment extends PlaylistFragment {
 
     private void populatePlaylist() {
         Database db = new Database(getActivity());
-        Database.TrackTable playlistTable = db.getTableLocalTracks();
+        TrackTable playlistTable = db.getTableLocalTracks();
 
         tracks = new ArrayList<>();
-        for (Database.Track track: playlistTable.readTracks()) {
+        for (Track track: playlistTable.readTracks()) {
             updateTracks(track);
         }
         if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
@@ -84,7 +89,7 @@ public class LocalMusicFragment extends PlaylistFragment {
     }
 
     private class readLibrary extends AsyncTask<Uri, Void, String> {
-        private Database.TrackTable localTracksTable;
+        private TrackTable localTracksTable;
 
         @Override
         protected String doInBackground(Uri... treeUri) {
@@ -102,7 +107,7 @@ public class LocalMusicFragment extends PlaylistFragment {
                 if (file.isDirectory()) {
                     scanDirectory(file);
                 } else if (file.isFile()) {
-                    Database.Track track = localTracksTable.newTrack(file.getUri());
+                    Track track = localTracksTable.newTrack(file.getUri());
                     if (track == null) {
                         continue;
                     }

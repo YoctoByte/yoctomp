@@ -1,4 +1,4 @@
-package yoctobyte.yoctomp;
+package yoctobyte.yoctomp.activities;
 
 
 import android.net.Uri;
@@ -15,6 +15,14 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.MenuItem;
 
+import yoctobyte.yoctomp.fragments.PlaylistFragment;
+import yoctobyte.yoctomp.R;
+import yoctobyte.yoctomp.fragments.SettingsFragment;
+import yoctobyte.yoctomp.fragments.CreatePlaylistFragment;
+import yoctobyte.yoctomp.fragments.HomeFragment;
+import yoctobyte.yoctomp.fragments.InfoFragment;
+import yoctobyte.yoctomp.fragments.LocalMusicFragment;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -22,7 +30,7 @@ public class MainActivity extends AppCompatActivity
         CreatePlaylistFragment.OnFragmentInteractionListener,
         InfoFragment.OnFragmentInteractionListener,
         SettingsFragment.OnFragmentInteractionListener,
-        PlaylistFragment.OnFragmentInteractionListener{
+        PlaylistFragment.OnFragmentInteractionListener {
 
     private SparseArray<Fragment> activeFragments = new SparseArray<>();
     private SparseArray<Class> fragmentClasses = new SparseArray<>();

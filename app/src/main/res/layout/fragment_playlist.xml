@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LocalMusicFragment">
+    tools:context=".fragments.LocalMusicFragment">
 
     <ListView
         android:id="@android:id/list"
@@ -13,6 +13,7 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="2dp"
         android:fastScrollEnabled="true"
+        android:scrollbars="none"
         android:focusable="true" />
 
     <TextView

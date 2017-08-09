@@ -1,4 +1,4 @@
-package yoctobyte.yoctomp;
+package yoctobyte.yoctomp.fragments;
 
 
 import android.content.Context;
@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +20,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import yoctobyte.yoctomp.R;
+import yoctobyte.yoctomp.data.Database;
+import yoctobyte.yoctomp.data.Track;
+import yoctobyte.yoctomp.data.TrackTable;
+
 
 public class PlaylistFragment extends ListFragment {
     protected ArrayList<HashMap<String, String>> tracks = new ArrayList<>();
+    protected SparseArray<Track> e = new SparseArray<>();
     private SimpleAdapter simpleAdapter;
     private String playlistName;
     private MediaPlayer mediaPlayer;
@@ -47,13 +54,15 @@ public class PlaylistFragment extends ListFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_playlist, container, false);
+        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
+        view.setVerticalScrollBarEnabled(false);
+        return view;
     }
 
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
-        Log.d("onListItemClick", String.valueOf(getSelectedItemId()));
-        Log.d("onListItemClick", String.valueOf(getSelectedItemPosition()));
+        Log.d("onListItemClick", position + " " + id);
+        Log.d("onListItemClick", listView.getItemAtPosition(position).toString());
         super.onListItemClick(listView, view, position, id);
     }
 
@@ -68,17 +77,17 @@ public class PlaylistFragment extends ListFragment {
             return;
         }
         Database db = new Database(getActivity());
-        Database.TrackTable playlistTable = db.getTablePlaylist(playlistName);
+        TrackTable playlistTable = db.getTablePlaylist(playlistName);
 
         tracks = new ArrayList<>();
-        for (Database.Track track: playlistTable.readTracks()) {
+        for (Track track: playlistTable.readTracks()) {
             updateTracks(track);
         }
 
         if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
     }
 
-    protected void updateTracks(Database.Track track) {
+    protected void updateTracks(Track track) {
         HashMap<String, String> temp = new HashMap<>();
         if (track.getTitle().equals("")) {
             temp.put("title", uriToFilename(track.getUri()));
