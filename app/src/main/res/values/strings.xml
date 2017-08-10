@@ -31,8 +31,15 @@
     <string name="menu_track_add_to_queue">Add to queue</string>
     <string name="menu_track_edit">Edit</string>
     <string name="menu_track_remove">Remove</string>
-
     <string name="playlist_empty">The playlist is empty!</string>
     <string name="extend_options">Three dots</string>
+
+    <!-- Media player fragment -->
+    <string name="media_player_play">Play</string>
+    <string name="media_player_next">Next</string>
+    <string name="media_player_previous">Previous</string>
+    <string name="media_player_shuffle">Shuffle</string>
+    <string name="media_player_repeat">Repeat</string>
+    <string name="media_player_cover_art">Cover art</string>
 
 </resources>

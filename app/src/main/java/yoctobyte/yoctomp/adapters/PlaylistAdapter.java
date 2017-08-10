@@ -16,10 +16,11 @@ import yoctobyte.yoctomp.data.Track;
 
 
 public class PlaylistAdapter extends SimpleAdapter {
-    private static ArrayList<HashMap<String, String>> tracks = new ArrayList<>();
+    private static ArrayList<HashMap<String, String>> tracksDisplay = new ArrayList<>();
+    private ArrayList<Track> tracks = new ArrayList<>();
 
     public PlaylistAdapter(Context context) {
-        super(context, tracks, R.layout.item_playlist, new String[]{"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
+        super(context, tracksDisplay, R.layout.item_playlist, new String[]{"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
     }
 
     @Override
@@ -29,7 +30,7 @@ public class PlaylistAdapter extends SimpleAdapter {
     }
 
     public void clear() {
-        tracks.clear();
+        tracksDisplay.clear();
     }
 
     public void addTrack(Track track) {
@@ -41,7 +42,7 @@ public class PlaylistAdapter extends SimpleAdapter {
         }
         temp.put("artist", track.getArtist());
         temp.put("length", track.getLengthRepr());
-        tracks.add(temp);
+        tracksDisplay.add(temp);
     }
 
     private String uriToFilename(Uri uri) {
