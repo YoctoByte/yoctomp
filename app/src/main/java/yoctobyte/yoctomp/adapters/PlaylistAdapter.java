@@ -31,6 +31,7 @@ public class PlaylistAdapter extends SimpleAdapter {
 
     public void clear() {
         tracksDisplay.clear();
+        tracks.clear();
     }
 
     public void addTrack(Track track) {
@@ -43,6 +44,11 @@ public class PlaylistAdapter extends SimpleAdapter {
         temp.put("artist", track.getArtist());
         temp.put("length", track.getLengthRepr());
         tracksDisplay.add(temp);
+        tracks.add(track);
+    }
+
+    public Track getTrack(int position) {
+        return tracks.get(position);
     }
 
     private String uriToFilename(Uri uri) {

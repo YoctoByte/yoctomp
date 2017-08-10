@@ -1,8 +1,8 @@
 package yoctobyte.yoctomp.fragments;
 
 
+import android.content.Context;
 import android.support.v4.app.ListFragment;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.app.ActionBar;
 import android.util.Log;
@@ -20,8 +20,8 @@ import yoctobyte.yoctomp.data.TrackTable;
 
 public class PlaylistFragment extends ListFragment {
     protected PlaylistAdapter playlistAdapter;
+    protected OnFragmentInteractionListener listener;
     private String playlistName;
-    private MediaPlayer mediaPlayer;
 
 
     public PlaylistFragment() {}
@@ -30,13 +30,10 @@ public class PlaylistFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mediaPlayer = new MediaPlayer();
 
-        playlistAdapter = new PlaylistAdapter(getActivity());
-        setListAdapter(playlistAdapter);
-
-        if (playlistAdapter.isEmpty()) {
-            populatePlaylist();
+        if (playlistAdapter == null) {
+            playlistAdapter = new PlaylistAdapter(getActivity());
+            setListAdapter(playlistAdapter);
         }
     }
 
@@ -48,16 +45,30 @@ public class PlaylistFragment extends ListFragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            listener = (OnFragmentInteractionListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         Log.d("onListItemClick", position + " " + id);
         Log.d("onListItemClick", listView.getItemAtPosition(position).toString());
         super.onListItemClick(listView, view, position, id);
+        listener.onTrackClicked(playlistAdapter.getTrack(position));
     }
 
     public void setPlaylistName(String playlistName) {
         this.playlistName = playlistName;
         ActionBar actionBar = getActivity().getActionBar();
         if (actionBar != null) actionBar.setTitle(playlistName);
+
+        if (playlistAdapter.isEmpty()) populatePlaylist();
     }
 
     private void populatePlaylist() {
@@ -75,5 +86,7 @@ public class PlaylistFragment extends ListFragment {
         playlistAdapter.notifyDataSetChanged();
     }
 
-    public interface OnFragmentInteractionListener {}
+    public interface OnFragmentInteractionListener {
+        void onTrackClicked(Track track);
+    }
 }
