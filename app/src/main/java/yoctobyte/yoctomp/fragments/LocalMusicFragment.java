@@ -5,9 +5,11 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import java.util.ArrayList;
@@ -123,7 +125,15 @@ public class LocalMusicFragment extends PlaylistFragment {
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
+
+            ListView listView = getListView();
+            Boolean isAtBottom;
+
+            isAtBottom = (listView.getLastVisiblePosition() >= listView.getCount() - 2);
             simpleAdapter.notifyDataSetChanged();
+            if (isAtBottom) {
+                listView.smoothScrollToPosition(listView.getCount() - 1);
+            }
         }
     }
 
