@@ -1,4 +1,4 @@
-package yoctobyte.yoctomp;
+package yoctobyte.yoctomp.fragments;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,6 +10,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import yoctobyte.yoctomp.R;
 
 
 /**

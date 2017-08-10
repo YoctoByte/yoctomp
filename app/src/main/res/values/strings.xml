@@ -1,4 +1,3 @@
-
 <resources>
     <string name="app_name">yoctomp</string>
 
@@ -30,7 +29,10 @@
     <string name="menu_track_play">Play</string>
     <string name="menu_track_add_to_playlist">Add to playlist</string>
     <string name="menu_track_add_to_queue">Add to queue</string>
+    <string name="menu_track_edit">Edit</string>
     <string name="menu_track_remove">Remove</string>
 
+    <string name="playlist_empty">The playlist is empty!</string>
+    <string name="extend_options">Three dots</string>
 
 </resources>

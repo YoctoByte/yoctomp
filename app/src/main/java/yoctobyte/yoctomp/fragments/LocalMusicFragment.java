@@ -8,6 +8,9 @@ import android.support.v4.provider.DocumentFile;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.SimpleAdapter;
+
+import java.util.ArrayList;
 
 import yoctobyte.yoctomp.R;
 import yoctobyte.yoctomp.data.Database;
@@ -17,6 +20,7 @@ import yoctobyte.yoctomp.data.TrackTable;
 
 public class LocalMusicFragment extends PlaylistFragment {
     private static final int CHOOSE_DIRECTORY_REQUEST = 42;
+    SimpleAdapter simpleAdapter;
 
 
     public LocalMusicFragment() {}
@@ -26,21 +30,24 @@ public class LocalMusicFragment extends PlaylistFragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        if (playlistAdapter.isEmpty()) {
+        if (tracks.size() == 0) {
             populatePlaylist();
         }
+
+        simpleAdapter = new SimpleAdapter(getActivity(), tracks, R.layout.item_playlist,
+                new String[] {"title", "artist", "length"}, new int[] {R.id.trackTitle, R.id.trackArtist, R.id.trackLength});
+        setListAdapter(simpleAdapter);
     }
 
     private void populatePlaylist() {
         Database db = new Database(getActivity());
         TrackTable playlistTable = db.getTableLocalTracks();
 
-        playlistAdapter.empty();
+        tracks = new ArrayList<>();
         for (Track track: playlistTable.readTracks()) {
-            playlistAdapter.addTrack(track);
+            updateTracks(track);
         }
-
-        playlistAdapter.notifyDataSetChanged();
+        if (simpleAdapter != null) simpleAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -63,8 +70,8 @@ public class LocalMusicFragment extends PlaylistFragment {
             return true;
         } else if (id == R.id.local_music_delete_database) {
             getActivity().deleteDatabase("db_yoctomp");
-            playlistAdapter.empty();
-            playlistAdapter.notifyDataSetChanged();
+            tracks.clear();
+            simpleAdapter.notifyDataSetChanged();
             return true;
         } else if (id == R.id.localMusic_manageSources) {
             return true;
@@ -107,7 +114,7 @@ public class LocalMusicFragment extends PlaylistFragment {
                         continue;
                     }
                     track.findMetadata(getActivity());
-                    playlistAdapter.addTrack(track);
+                    updateTracks(track);
                     publishProgress();
                 }
             }
@@ -116,7 +123,7 @@ public class LocalMusicFragment extends PlaylistFragment {
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
-            playlistAdapter.notifyDataSetChanged();
+            simpleAdapter.notifyDataSetChanged();
         }
     }
 
