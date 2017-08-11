@@ -1,5 +1,6 @@
 package yoctobyte.yoctomp.fragments;
 
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -128,6 +129,4 @@ public class LocalMusicFragment extends PlaylistFragment {
             }
         }
     }
-
-    public interface OnFragmentInteractionListener {}
 }

@@ -2,6 +2,7 @@ package yoctobyte.yoctomp.fragments;
 
 
 import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.os.Bundle;
 import android.app.ActionBar;
@@ -10,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+
+import java.util.ArrayList;
 
 import yoctobyte.yoctomp.R;
 import yoctobyte.yoctomp.adapters.PlaylistAdapter;
@@ -20,7 +23,8 @@ import yoctobyte.yoctomp.data.TrackTable;
 
 public class PlaylistFragment extends ListFragment {
     protected PlaylistAdapter playlistAdapter;
-    protected OnFragmentInteractionListener listener;
+    protected OnPlaylistInteractionListener listener;
+    private ArrayList<Track> tracks = new ArrayList<>();  // This list won't handle track deletion correctly...
     private String playlistName;
 
 
@@ -29,6 +33,9 @@ public class PlaylistFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.d("PlaylistFragment", "onCreate is called");
+
         setRetainInstance(true);
 
         if (playlistAdapter == null) {
@@ -47,12 +54,21 @@ public class PlaylistFragment extends ListFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.d("PlaylistFragment", "onAttach is called");
 
         try {
-            listener = (OnFragmentInteractionListener) context;
+            listener = (OnPlaylistInteractionListener) context;
+            listener.onFragmentAttach(this);
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnFragmentInteractionListener");
+            throw new ClassCastException(context.toString() + " must implement OnPlaylistInteractionListener");
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener.onFragmentDetach(this);
+        listener = null;
     }
 
     @Override
@@ -60,7 +76,7 @@ public class PlaylistFragment extends ListFragment {
         Log.d("onListItemClick", position + " " + id);
         Log.d("onListItemClick", listView.getItemAtPosition(position).toString());
         super.onListItemClick(listView, view, position, id);
-        listener.onTrackClicked(playlistAdapter.getTrack(position));
+        listener.onTrackClicked(tracks.get(position));
     }
 
     public void setPlaylistName(String playlistName) {
@@ -81,12 +97,15 @@ public class PlaylistFragment extends ListFragment {
         playlistAdapter.clear();
         for (Track track: playlistTable.readTracks()) {
             playlistAdapter.addTrack(track);
+            tracks.add(track);
         }
 
         playlistAdapter.notifyDataSetChanged();
     }
 
-    public interface OnFragmentInteractionListener {
+    public interface OnPlaylistInteractionListener {
         void onTrackClicked(Track track);
+        void onFragmentAttach(Fragment fragment);
+        void onFragmentDetach(Fragment fragment);
     }
 }
