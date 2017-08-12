@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity
             try {
                 Fragment fragment = (Fragment) fragmentClass.newInstance();
                 FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.add(fragment, fragmentTag);
                 transaction.attach(fragment);
                 transaction.commit();
                 activeFragments.put(fragmentTag, fragment);
@@ -104,7 +103,7 @@ public class MainActivity extends AppCompatActivity
 
         // Load home fragment into UI
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.mainContent, activeFragments.get(HOME_FRAGMENT_TAG));
+        transaction.replace(R.id.mainContent, activeFragments.get(HOME_FRAGMENT_TAG), HOME_FRAGMENT_TAG);
         transaction.commit();
     }
 
@@ -138,15 +137,13 @@ public class MainActivity extends AppCompatActivity
             if (activeFragments.containsKey(fragmentTag)) {
                 Log.d("onNavigationItemSelect", "contains key");
                 fragment = activeFragments.get(fragmentTag);
-                fragmentManager.beginTransaction().replace(R.id.mainContent, fragment).commit();
+                fragmentManager.beginTransaction().replace(R.id.mainContent, fragment, fragmentTag).commit();
             } else {
                 Log.d("onNavigationItemSelect", "does not contain key");
-                fragmentTag = drawerFragments.get(navId);
                 try {
                     fragment = (Fragment) fragmentClasses.get(fragmentTag).newInstance();
                     FragmentTransaction transaction = fragmentManager.beginTransaction();
-                    transaction.add(fragment, fragmentTag);
-                    transaction.replace(R.id.mainContent, fragment);
+                    transaction.replace(R.id.mainContent, fragment, fragmentTag);
                     transaction.commit();
                     activeFragments.put(fragmentTag, fragment);
                 } catch (Exception e) {
@@ -160,24 +157,38 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onTrackClicked(Track track) {
-        fragmentManager.beginTransaction().replace(R.id.mainContent, activeFragments.get(MEDIA_PLAYER_FRAGMENT_TAG)).commit();
-        MediaPlayerFragment mediaPlayerFragment = (MediaPlayerFragment) activeFragments.get(MEDIA_PLAYER_FRAGMENT_TAG);
-        mediaPlayerFragment.playTrack(track);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        Fragment fragment;
+        if (activeFragments.containsKey(MEDIA_PLAYER_FRAGMENT_TAG)) {
+            fragment = activeFragments.get(MEDIA_PLAYER_FRAGMENT_TAG);
+        } else {
+            try {
+                fragment = (Fragment) fragmentClasses.get(MEDIA_PLAYER_FRAGMENT_TAG).newInstance();
+            } catch (Exception e) {
+                fragment = null;
+            }
+        }
+        if (fragment != null) {
+            transaction.replace(R.id.mainContent, fragment, MEDIA_PLAYER_FRAGMENT_TAG);
+            transaction.commit();
+            MediaPlayerFragment mediaPlayerFragment = (MediaPlayerFragment) activeFragments.get(MEDIA_PLAYER_FRAGMENT_TAG);
+            mediaPlayerFragment.playTrack(track);
+        }
     }
 
     @Override
     public void onFragmentAttach(Fragment fragment) {
         String fragmentTag = fragment.getTag();
-        activeFragments.put(fragmentTag, fragment);
-        Log.d("onFragmentAttach", fragmentTag);
+        if (fragmentTag != null) {
+            Log.d("onFragmentAttach", fragmentTag);
+        }
     }
 
     @Override
     public void onFragmentDetach(Fragment fragment) {
         String fragmentTag = fragment.getTag();
-        Log.d("onFragmentDetach", fragmentTag);
-        if (activeFragments.get(fragmentTag) == fragment) {
-            activeFragments.remove(fragmentTag);
+        if (fragmentTag != null) {
+            Log.d("onFragmentDetach", fragmentTag);
         }
     }
 
