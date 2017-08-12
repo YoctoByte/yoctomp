@@ -1,6 +1,7 @@
 package yoctobyte.yoctomp.fragments;
 
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -14,8 +15,10 @@ import java.io.IOException;
 
 import yoctobyte.yoctomp.R;
 import yoctobyte.yoctomp.data.Track;
+import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 
 public class MediaPlayerFragment extends Fragment{
+    private FragmentStateListener fragmentStateListener;
     MediaPlayer mediaPlayer;
 
     @Override
@@ -50,5 +53,23 @@ public class MediaPlayerFragment extends Fragment{
 
     public void play() {
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            fragmentStateListener = (FragmentStateListener) context;
+            fragmentStateListener.onFragmentAttach(this);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement FragmentStateListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        fragmentStateListener.onFragmentDetach(this);
+        fragmentStateListener = null;
     }
 }

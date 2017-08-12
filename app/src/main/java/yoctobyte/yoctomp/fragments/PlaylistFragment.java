@@ -19,9 +19,11 @@ import yoctobyte.yoctomp.adapters.PlaylistAdapter;
 import yoctobyte.yoctomp.data.Database;
 import yoctobyte.yoctomp.data.Track;
 import yoctobyte.yoctomp.data.TrackTable;
+import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 
 
 public class PlaylistFragment extends ListFragment {
+    private FragmentStateListener fragmentStateListener;
     protected PlaylistAdapter playlistAdapter;
     protected OnPlaylistInteractionListener listener;
     private ArrayList<Track> tracks = new ArrayList<>();  // This list won't handle track deletion correctly...
@@ -54,21 +56,20 @@ public class PlaylistFragment extends ListFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d("PlaylistFragment", "onAttach is called");
-
         try {
             listener = (OnPlaylistInteractionListener) context;
-            listener.onFragmentAttach(this);
+            fragmentStateListener = (FragmentStateListener) context;
+            fragmentStateListener.onFragmentAttach(this);
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnPlaylistInteractionListener");
+            throw new ClassCastException(context.toString() + " must implement FragmentStateListener");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        listener.onFragmentDetach(this);
-        listener = null;
+        fragmentStateListener.onFragmentDetach(this);
+        fragmentStateListener = null;
     }
 
     @Override

@@ -28,16 +28,14 @@ import yoctobyte.yoctomp.fragments.CreatePlaylistFragment;
 import yoctobyte.yoctomp.fragments.HomeFragment;
 import yoctobyte.yoctomp.fragments.InfoFragment;
 import yoctobyte.yoctomp.fragments.LocalMusicFragment;
+import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 import yoctobyte.yoctomp.R;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        PlaylistFragment.OnPlaylistInteractionListener {
-
-    private HashMap<String, Fragment> activeFragments = new HashMap<>();
-    private SparseArray<String> drawerFragments = new SparseArray<>();
-    private HashMap<String, Class> fragmentTags = new HashMap<>();
+        PlaylistFragment.OnPlaylistInteractionListener,
+        FragmentStateListener{
 
     private FragmentManager fragmentManager;
 
@@ -48,6 +46,10 @@ public class MainActivity extends AppCompatActivity
     private static final String INFO_FRAGMENT_TAG = "InfoFragment";
     private static final String MEDIA_PLAYER_FRAGMENT_TAG = "MediaPlayerFragment";
     // private static final String PLAYLIST_TAG_PREFIX = "PlaylistFragment_";
+
+    private HashMap<String, Fragment> activeFragments = new HashMap<>();  // Keys are fragmentClasses.
+    private SparseArray<String> drawerFragments = new SparseArray<>();  // Keys are ids of the drawer items.
+    private HashMap<String, Class> fragmentClasses = new HashMap<>();
 
 
     @Override
@@ -61,12 +63,20 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        fragmentTags.put(HOME_FRAGMENT_TAG, HomeFragment.class);
-        fragmentTags.put(LOCAL_MUSIC_FRAGMENT_TAG, LocalMusicFragment.class);
-        fragmentTags.put(CREATE_PLAYLIST_FRAGMENT_TAG, CreatePlaylistFragment.class);
-        fragmentTags.put(SETTINGS_FRAGMENT_TAG, SettingsFragment.class);
-        fragmentTags.put(INFO_FRAGMENT_TAG, InfoFragment.class);
-        fragmentTags.put(MEDIA_PLAYER_FRAGMENT_TAG, MediaPlayerFragment.class);
+        // Create drawer
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigationView);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        fragmentClasses.put(HOME_FRAGMENT_TAG, HomeFragment.class);
+        fragmentClasses.put(LOCAL_MUSIC_FRAGMENT_TAG, LocalMusicFragment.class);
+        fragmentClasses.put(CREATE_PLAYLIST_FRAGMENT_TAG, CreatePlaylistFragment.class);
+        fragmentClasses.put(SETTINGS_FRAGMENT_TAG, SettingsFragment.class);
+        fragmentClasses.put(INFO_FRAGMENT_TAG, InfoFragment.class);
+        fragmentClasses.put(MEDIA_PLAYER_FRAGMENT_TAG, MediaPlayerFragment.class);
 
         drawerFragments.put(R.id.drawer_home, HOME_FRAGMENT_TAG);
         drawerFragments.put(R.id.drawer_local_music, LOCAL_MUSIC_FRAGMENT_TAG);
@@ -76,7 +86,7 @@ public class MainActivity extends AppCompatActivity
 
         // Preload fragments
         fragmentManager = getSupportFragmentManager();
-        for (Map.Entry<String, Class> entry: fragmentTags.entrySet()) {
+        for (Map.Entry<String, Class> entry: fragmentClasses.entrySet()) {
             String fragmentTag = entry.getKey();
             Class fragmentClass = entry.getValue();
             try {
@@ -96,14 +106,6 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.mainContent, activeFragments.get(HOME_FRAGMENT_TAG));
         transaction.commit();
-
-        // Create drawer
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawerLayout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.drawer_open, R.string.drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigationView);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d("onNavigationItemSelect", "does not contain key");
                 fragmentTag = drawerFragments.get(navId);
                 try {
-                    fragment = (Fragment) fragmentTags.get(fragmentTag).newInstance();
+                    fragment = (Fragment) fragmentClasses.get(fragmentTag).newInstance();
                     FragmentTransaction transaction = fragmentManager.beginTransaction();
                     transaction.add(fragment, fragmentTag);
                     transaction.replace(R.id.mainContent, fragment);
