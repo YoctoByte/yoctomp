@@ -27,14 +27,13 @@ import yoctobyte.yoctomp.fragments.CreatePlaylistFragment;
 import yoctobyte.yoctomp.fragments.HomeFragment;
 import yoctobyte.yoctomp.fragments.InfoFragment;
 import yoctobyte.yoctomp.fragments.LocalMusicFragment;
-import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 import yoctobyte.yoctomp.R;
 import yoctobyte.yoctomp.interfaces.OnTrackInteractionListener;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        OnTrackInteractionListener, FragmentStateListener{
+        OnTrackInteractionListener{
 
     private FragmentManager fragmentManager;
 
@@ -174,21 +173,4 @@ public class MainActivity extends AppCompatActivity
             mediaPlayerFragment.playTrack(track);
         }
     }
-
-    @Override
-    public void onFragmentAttach(Fragment fragment) {
-        String fragmentTag = fragment.getTag();
-        if (fragmentTag != null) {
-            Log.d("onFragmentAttach", fragmentTag);
-        }
-    }
-
-    @Override
-    public void onFragmentDetach(Fragment fragment) {
-        String fragmentTag = fragment.getTag();
-        if (fragmentTag != null) {
-            Log.d("onFragmentDetach", fragmentTag);
-        }
-    }
-
 }
