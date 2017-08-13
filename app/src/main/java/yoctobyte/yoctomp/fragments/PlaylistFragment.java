@@ -19,13 +19,14 @@ import yoctobyte.yoctomp.data.Database;
 import yoctobyte.yoctomp.data.Track;
 import yoctobyte.yoctomp.data.TrackTable;
 import yoctobyte.yoctomp.interfaces.FragmentStateListener;
+import yoctobyte.yoctomp.interfaces.OnTrackInteractionListener;
 
 
 public class PlaylistFragment extends ListFragment {
     protected boolean initialized = false;
     protected FragmentStateListener fragmentStateListener;
     protected PlaylistAdapter playlistAdapter;
-    protected OnPlaylistInteractionListener listener;
+    protected OnTrackInteractionListener trackListener;
 
     protected ArrayList<Track> tracks = new ArrayList<>();  // This list won't handle track deletion correctly...
     private String playlistName;
@@ -60,7 +61,7 @@ public class PlaylistFragment extends ListFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            listener = (OnPlaylistInteractionListener) context;
+            trackListener = (OnTrackInteractionListener) context;
             fragmentStateListener = (FragmentStateListener) context;
             fragmentStateListener.onFragmentAttach(this);
         } catch (ClassCastException e) {
@@ -80,7 +81,7 @@ public class PlaylistFragment extends ListFragment {
         Log.d("onListItemClick", position + " " + id);
         Log.d("onListItemClick", listView.getItemAtPosition(position).toString());
         super.onListItemClick(listView, view, position, id);
-        listener.onTrackClicked(tracks.get(position));
+        trackListener.onTrackPlayed(tracks.get(position));
     }
 
     public void setPlaylistName(String playlistName) {
@@ -106,9 +107,5 @@ public class PlaylistFragment extends ListFragment {
         }
 
         playlistAdapter.notifyDataSetChanged();
-    }
-
-    public interface OnPlaylistInteractionListener {
-        void onTrackClicked(Track track);
     }
 }

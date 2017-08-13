@@ -22,7 +22,6 @@ import java.util.Map;
 
 import yoctobyte.yoctomp.data.Track;
 import yoctobyte.yoctomp.fragments.MediaPlayerFragment;
-import yoctobyte.yoctomp.fragments.PlaylistFragment;
 import yoctobyte.yoctomp.fragments.SettingsFragment;
 import yoctobyte.yoctomp.fragments.CreatePlaylistFragment;
 import yoctobyte.yoctomp.fragments.HomeFragment;
@@ -30,12 +29,12 @@ import yoctobyte.yoctomp.fragments.InfoFragment;
 import yoctobyte.yoctomp.fragments.LocalMusicFragment;
 import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 import yoctobyte.yoctomp.R;
+import yoctobyte.yoctomp.interfaces.OnTrackInteractionListener;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        PlaylistFragment.OnPlaylistInteractionListener,
-        FragmentStateListener{
+        OnTrackInteractionListener, FragmentStateListener{
 
     private FragmentManager fragmentManager;
 
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onTrackClicked(Track track) {
+    public void onTrackPlayed(Track track) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         Fragment fragment;
         if (activeFragments.containsKey(MEDIA_PLAYER_FRAGMENT_TAG)) {
