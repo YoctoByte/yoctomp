@@ -2,7 +2,6 @@ package yoctobyte.yoctomp.fragments;
 
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.os.Bundle;
 import android.app.ActionBar;
@@ -106,7 +105,5 @@ public class PlaylistFragment extends ListFragment {
 
     public interface OnPlaylistInteractionListener {
         void onTrackClicked(Track track);
-        void onFragmentAttach(Fragment fragment);
-        void onFragmentDetach(Fragment fragment);
     }
 }
