@@ -22,10 +22,12 @@ import yoctobyte.yoctomp.interfaces.FragmentStateListener;
 
 
 public class PlaylistFragment extends ListFragment {
-    private FragmentStateListener fragmentStateListener;
+    protected boolean initialized = false;
+    protected FragmentStateListener fragmentStateListener;
     protected PlaylistAdapter playlistAdapter;
     protected OnPlaylistInteractionListener listener;
-    private ArrayList<Track> tracks = new ArrayList<>();  // This list won't handle track deletion correctly...
+
+    protected ArrayList<Track> tracks = new ArrayList<>();  // This list won't handle track deletion correctly...
     private String playlistName;
 
 
@@ -35,14 +37,16 @@ public class PlaylistFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d("PlaylistFragment", "onCreate is called");
+        if (!initialized) {
+            Log.d("PlaylistFragment", "onCreate is called");
 
-        setRetainInstance(true);
+            setRetainInstance(true);
 
-        if (playlistAdapter == null) {
             playlistAdapter = new PlaylistAdapter(getActivity());
             setListAdapter(playlistAdapter);
         }
+
+        initialized = true;
     }
 
     @Override
@@ -95,6 +99,7 @@ public class PlaylistFragment extends ListFragment {
         TrackTable playlistTable = db.getTablePlaylist(playlistName);
 
         playlistAdapter.clear();
+        tracks.clear();
         for (Track track: playlistTable.readTracks()) {
             playlistAdapter.addTrack(track);
             tracks.add(track);

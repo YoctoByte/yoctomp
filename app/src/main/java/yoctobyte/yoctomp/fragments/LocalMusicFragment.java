@@ -38,8 +38,10 @@ public class LocalMusicFragment extends PlaylistFragment {
         TrackTable playlistTable = db.getTableLocalTracks();
 
         playlistAdapter.clear();
+        tracks.clear();
         for (Track track: playlistTable.readTracks()) {
             playlistAdapter.addTrack(track);
+            tracks.add(track);
         }
 
         playlistAdapter.notifyDataSetChanged();
